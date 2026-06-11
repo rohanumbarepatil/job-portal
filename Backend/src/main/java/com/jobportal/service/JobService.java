@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import com.jobportal.repository.CompanyRepository;
 
 @Service
 public class JobService {
@@ -17,10 +18,10 @@ public class JobService {
     private final ResumeRankingService rankingService;
     private final CompanyRepository companyRepository;
 
-    public JobService(JobRepository jobRepository, 
-                      CompanyRepository companyRepository, 
-                      SavedJobRepository savedJobRepository,
-                      ResumeRankingService rankingService) {
+    public JobService(JobRepository jobRepository,
+            CompanyRepository companyRepository,
+            SavedJobRepository savedJobRepository,
+            ResumeRankingService rankingService) {
         this.jobRepository = jobRepository;
         this.companyRepository = companyRepository;
         this.savedJobRepository = savedJobRepository;
@@ -32,7 +33,7 @@ public class JobService {
         request.setRecruiterUid(recruiterUid);
         request.setCreatedAt(Instant.now().toString());
         request.setUpdatedAt(Instant.now().toString());
-        
+
         if (request.getStatus() == null) {
             request.setStatus("DRAFT");
         }
@@ -60,11 +61,12 @@ public class JobService {
         existing.setUpdatedAt(Instant.now().toString());
 
         jobRepository.save(existing);
-        
+
         // Invalidate AI caches
         try {
             rankingService.invalidateJobRankings(jobId);
-        } catch (Exception ignore) {}
+        } catch (Exception ignore) {
+        }
 
         return existing;
     }
@@ -97,7 +99,8 @@ public class JobService {
 
     public SavedJobEntity saveJob(String userId, String jobId) throws Exception {
         JobEntity job = jobRepository.findById(jobId);
-        if (job == null) throw new RuntimeException("Job not found");
+        if (job == null)
+            throw new RuntimeException("Job not found");
 
         String savedJobId = userId + "_" + jobId;
         SavedJobEntity savedJob = SavedJobEntity.builder()
@@ -112,10 +115,9 @@ public class JobService {
                         job.getLocation(),
                         job.getLocationType(),
                         job.getEmploymentType(),
-                        job.getStatus()
-                ))
+                        job.getStatus()))
                 .build();
-        
+
         savedJobRepository.save(savedJob);
         jobRepository.incrementMetric(jobId, "saves", 1);
         return savedJob;

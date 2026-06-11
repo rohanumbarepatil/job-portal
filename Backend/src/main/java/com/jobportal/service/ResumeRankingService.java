@@ -29,11 +29,11 @@ public class ResumeRankingService {
     private final GeminiMatchingService geminiService;
 
     public ResumeRankingService(AICandidateRankingRepository rankingRepository,
-                                AIScoringLogRepository scoringLogRepository,
-                                JobRepository jobRepository,
-                                JobSeekerProfileRepository profileRepository,
-                                ApplicationRepository applicationRepository,
-                                GeminiMatchingService geminiService) {
+            AIScoringLogRepository scoringLogRepository,
+            JobRepository jobRepository,
+            JobSeekerProfileRepository profileRepository,
+            ApplicationRepository applicationRepository,
+            GeminiMatchingService geminiService) {
         this.rankingRepository = rankingRepository;
         this.scoringLogRepository = scoringLogRepository;
         this.jobRepository = jobRepository;
@@ -52,10 +52,12 @@ public class ResumeRankingService {
 
         // Cache Miss or Stale -> Lazy Evaluation
         JobEntity job = jobRepository.findById(jobId);
-        if (job == null) throw new RuntimeException("Job not found");
+        if (job == null)
+            throw new RuntimeException("Job not found");
 
-        JobSeekerProfile profile = profileRepository.findByUid(candidateUid);
-        if (profile == null) throw new RuntimeException("Profile not found");
+        JobSeekerProfile profile = profileRepository.findById(candidateUid);
+        if (profile == null)
+            throw new RuntimeException("Profile not found");
 
         // 1. Call Gemini
         GeminiRankingResponseDTO dto = geminiService.rankCandidate(job, profile);
@@ -75,7 +77,7 @@ public class ResumeRankingService {
                 .stale(false)
                 .updatedAt(Instant.now().toString())
                 .build();
-        
+
         rankingRepository.save(ranking);
 
         // 3. Save Log
@@ -119,14 +121,15 @@ public class ResumeRankingService {
         // Fetch all candidates who applied to this job
         List<ApplicationEntity> applications = applicationRepository.findByJobId(jobId);
         List<AICandidateRankingEntity> rankings = new ArrayList<>();
-        
+
         for (ApplicationEntity app : applications) {
             try {
                 AICandidateRankingEntity ranking = getOrGenerateRanking(jobId, app.getCandidateUid());
                 rankings.add(ranking);
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
         }
-        
+
         // Sort descending by total score
         rankings.sort((a, b) -> Integer.compare(b.getTotalScore(), a.getTotalScore()));
         return rankings;
