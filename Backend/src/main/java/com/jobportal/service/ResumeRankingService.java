@@ -1,0 +1,134 @@
+package com.jobportal.service;
+
+import com.jobportal.dto.GeminiRankingResponseDTO;
+import com.jobportal.entity.AICandidateRankingEntity;
+import com.jobportal.entity.AIScoringLogEntity;
+import com.jobportal.entity.JobEntity;
+import com.jobportal.entity.JobSeekerProfile;
+import com.jobportal.entity.ApplicationEntity;
+import com.jobportal.repository.AICandidateRankingRepository;
+import com.jobportal.repository.AIScoringLogRepository;
+import com.jobportal.repository.JobRepository;
+import com.jobportal.repository.JobSeekerProfileRepository;
+import com.jobportal.repository.ApplicationRepository;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+public class ResumeRankingService {
+
+    private final AICandidateRankingRepository rankingRepository;
+    private final AIScoringLogRepository scoringLogRepository;
+    private final JobRepository jobRepository;
+    private final JobSeekerProfileRepository profileRepository;
+    private final ApplicationRepository applicationRepository;
+    private final GeminiMatchingService geminiService;
+
+    public ResumeRankingService(AICandidateRankingRepository rankingRepository,
+                                AIScoringLogRepository scoringLogRepository,
+                                JobRepository jobRepository,
+                                JobSeekerProfileRepository profileRepository,
+                                ApplicationRepository applicationRepository,
+                                GeminiMatchingService geminiService) {
+        this.rankingRepository = rankingRepository;
+        this.scoringLogRepository = scoringLogRepository;
+        this.jobRepository = jobRepository;
+        this.profileRepository = profileRepository;
+        this.applicationRepository = applicationRepository;
+        this.geminiService = geminiService;
+    }
+
+    public AICandidateRankingEntity getOrGenerateRanking(String jobId, String candidateUid) throws Exception {
+        String rankingId = jobId + "_" + candidateUid;
+        AICandidateRankingEntity cachedRanking = rankingRepository.findById(rankingId);
+
+        if (cachedRanking != null && !cachedRanking.isStale()) {
+            return cachedRanking; // Cache Hit
+        }
+
+        // Cache Miss or Stale -> Lazy Evaluation
+        JobEntity job = jobRepository.findById(jobId);
+        if (job == null) throw new RuntimeException("Job not found");
+
+        JobSeekerProfile profile = profileRepository.findByUid(candidateUid);
+        if (profile == null) throw new RuntimeException("Profile not found");
+
+        // 1. Call Gemini
+        GeminiRankingResponseDTO dto = geminiService.rankCandidate(job, profile);
+
+        // 2. Save Ranking
+        AICandidateRankingEntity ranking = AICandidateRankingEntity.builder()
+                .rankingId(rankingId)
+                .candidateUid(candidateUid)
+                .jobId(jobId)
+                .totalScore(dto.getTotalScore())
+                .skillsMatch(dto.getSkillsMatch())
+                .experienceMatch(dto.getExperienceMatch())
+                .educationMatch(dto.getEducationMatch())
+                .profileStrength(dto.getProfileStrength())
+                .resumeQuality(dto.getResumeQuality())
+                .aiExplanation(dto.getAiExplanation())
+                .stale(false)
+                .updatedAt(Instant.now().toString())
+                .build();
+        
+        rankingRepository.save(ranking);
+
+        // 3. Save Log
+        AIScoringLogEntity log = AIScoringLogEntity.builder()
+                .logId(UUID.randomUUID().toString())
+                .type(cachedRanking == null ? "RANKING_GENERATED" : "RANKING_RECALCULATED")
+                .targetId(rankingId)
+                .reason("Lazy evaluation triggered")
+                .timestamp(Instant.now().toString())
+                .build();
+        scoringLogRepository.save(log);
+
+        return ranking;
+    }
+
+    public void invalidateJobRankings(String jobId) {
+        try {
+            var rankings = rankingRepository.findByJobId(jobId);
+            for (var r : rankings) {
+                r.setStale(true);
+                rankingRepository.save(r);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to invalidate job rankings: " + e.getMessage());
+        }
+    }
+
+    public void invalidateCandidateRankings(String candidateUid) {
+        try {
+            var rankings = rankingRepository.findByCandidateUid(candidateUid);
+            for (var r : rankings) {
+                r.setStale(true);
+                rankingRepository.save(r);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to invalidate candidate rankings: " + e.getMessage());
+        }
+    }
+
+    public List<AICandidateRankingEntity> getOrGenerateRankingBatchForJob(String jobId) throws Exception {
+        // Fetch all candidates who applied to this job
+        List<ApplicationEntity> applications = applicationRepository.findByJobId(jobId);
+        List<AICandidateRankingEntity> rankings = new ArrayList<>();
+        
+        for (ApplicationEntity app : applications) {
+            try {
+                AICandidateRankingEntity ranking = getOrGenerateRanking(jobId, app.getCandidateUid());
+                rankings.add(ranking);
+            } catch (Exception ignore) {}
+        }
+        
+        // Sort descending by total score
+        rankings.sort((a, b) -> Integer.compare(b.getTotalScore(), a.getTotalScore()));
+        return rankings;
+    }
+}
