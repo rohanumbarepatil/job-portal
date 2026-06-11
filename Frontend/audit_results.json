@@ -2,14 +2,7 @@
   "phases": {
     "auth": "PASS"
   },
-  "bugs": [
-    {
-      "phase": "Security",
-      "issue": "Candidate was able to delete a job!",
-      "sev": "P0 Critical",
-      "details": "RBAC Failure"
-    }
-  ],
+  "bugs": [],
   "payloads": [
     {
       "endpoint": "Firebase Auth",
@@ -26,19 +19,19 @@
         "success": true,
         "message": "Company created",
         "data": {
-          "companyId": "b1b9eb19-4c3a-43f1-b50c-4d9e7abf0388",
-          "ownerUid": "EYRpQySyQWbvmAjh7dH4wODykzr1",
-          "companySlug": "e2e-tech-1781206189200",
+          "companyId": "b8a6ab84-90be-4577-9e75-9042b595f8bb",
+          "ownerUid": "xDEdu4FqrVZq1cMKLzvD28TEBeD2",
+          "companySlug": "e2e-tech-1781207262120",
           "verificationStatus": "PENDING",
           "isHiring": false,
           "rating": 0,
           "followers": 0,
           "teamMemberUids": [
-            "EYRpQySyQWbvmAjh7dH4wODykzr1"
+            "xDEdu4FqrVZq1cMKLzvD28TEBeD2"
           ],
           "teamMembers": [
             {
-              "uid": "EYRpQySyQWbvmAjh7dH4wODykzr1",
+              "uid": "xDEdu4FqrVZq1cMKLzvD28TEBeD2",
               "role": "OWNER"
             }
           ],
@@ -80,9 +73,9 @@
         "success": true,
         "message": "Job created successfully",
         "data": {
-          "jobId": "a47592ac-4f55-4557-b656-b4610711b0e0",
+          "jobId": "48926c43-77a8-4aa4-8f3e-93e32a34acdc",
           "companyId": null,
-          "recruiterUid": "EYRpQySyQWbvmAjh7dH4wODykzr1",
+          "recruiterUid": "xDEdu4FqrVZq1cMKLzvD28TEBeD2",
           "status": "ACTIVE",
           "title": "E2E Senior Developer",
           "description": "Must know integration testing.",
@@ -112,8 +105,8 @@
             "applications": 0
           },
           "applicationDeadline": null,
-          "createdAt": "2026-06-11T19:29:49.458151600Z",
-          "updatedAt": "2026-06-11T19:29:49.458151600Z",
+          "createdAt": "2026-06-11T19:47:42.375753800Z",
+          "updatedAt": "2026-06-11T19:47:42.375753800Z",
           "featured": false,
           "urgentHiring": false
         }
@@ -128,7 +121,7 @@
         "success": true,
         "message": "Profile updated",
         "data": {
-          "uid": "vuw2mFyufQWCDMW28XoFFmJdKB02",
+          "uid": "g8Sw6JYQhINsUQlExBQg28vqAGt2",
           "username": null,
           "profileVisibility": null,
           "openToWork": false,
@@ -173,20 +166,20 @@
       "status": 200
     },
     {
-      "endpoint": "/applications/apply/a47592ac-4f55-4557-b656-b4610711b0e0",
+      "endpoint": "/applications/apply/48926c43-77a8-4aa4-8f3e-93e32a34acdc",
       "method": "POST",
       "request": {
-        "jobId": "a47592ac-4f55-4557-b656-b4610711b0e0"
+        "jobId": "48926c43-77a8-4aa4-8f3e-93e32a34acdc"
       },
       "response": {
         "success": true,
         "message": "Application submitted successfully",
         "data": {
-          "applicationId": "eceb2b91-7c54-4ade-8377-7edc8fa8a07e",
-          "jobId": "a47592ac-4f55-4557-b656-b4610711b0e0",
+          "applicationId": "6aabeb26-f227-4805-a9d9-84609153fb79",
+          "jobId": "48926c43-77a8-4aa4-8f3e-93e32a34acdc",
           "companyId": null,
-          "candidateUid": "vuw2mFyufQWCDMW28XoFFmJdKB02",
-          "recruiterUid": "EYRpQySyQWbvmAjh7dH4wODykzr1",
+          "candidateUid": "g8Sw6JYQhINsUQlExBQg28vqAGt2",
+          "recruiterUid": "xDEdu4FqrVZq1cMKLzvD28TEBeD2",
           "resumeUrl": null,
           "coverLetter": "I am perfect for this E2E job.",
           "atsMatchScore": 35,
@@ -203,14 +196,14 @@
             "title": "E2E Senior Developer",
             "companyName": ""
           },
-          "createdAt": "2026-06-11T19:29:50.196895900Z",
-          "updatedAt": "2026-06-11T19:29:50.196895900Z"
+          "createdAt": "2026-06-11T19:47:43.158901500Z",
+          "updatedAt": "2026-06-11T19:47:43.158901500Z"
         }
       },
       "status": 200
     },
     {
-      "endpoint": "/applications/eceb2b91-7c54-4ade-8377-7edc8fa8a07e/status",
+      "endpoint": "/applications/6aabeb26-f227-4805-a9d9-84609153fb79/status",
       "method": "PATCH",
       "request": {
         "status": "SCREENING"
@@ -226,16 +219,16 @@
       "endpoint": "/ai/rankings",
       "method": "GET",
       "request": {
-        "jobId": "a47592ac-4f55-4557-b656-b4610711b0e0",
-        "uid": "vuw2mFyufQWCDMW28XoFFmJdKB02"
+        "jobId": "48926c43-77a8-4aa4-8f3e-93e32a34acdc",
+        "uid": "g8Sw6JYQhINsUQlExBQg28vqAGt2"
       },
       "response": {
         "success": true,
         "message": "Ranking retrieved.",
         "data": {
-          "rankingId": "a47592ac-4f55-4557-b656-b4610711b0e0_vuw2mFyufQWCDMW28XoFFmJdKB02",
-          "candidateUid": "vuw2mFyufQWCDMW28XoFFmJdKB02",
-          "jobId": "a47592ac-4f55-4557-b656-b4610711b0e0",
+          "rankingId": "48926c43-77a8-4aa4-8f3e-93e32a34acdc_g8Sw6JYQhINsUQlExBQg28vqAGt2",
+          "candidateUid": "g8Sw6JYQhINsUQlExBQg28vqAGt2",
+          "jobId": "48926c43-77a8-4aa4-8f3e-93e32a34acdc",
           "totalScore": 0,
           "skillsMatch": 0,
           "experienceMatch": 0,
@@ -244,7 +237,7 @@
           "resumeQuality": 0,
           "aiExplanation": "AI Evaluation temporarily unavailable.",
           "stale": false,
-          "updatedAt": "2026-06-11T19:29:52.209786800Z"
+          "updatedAt": "2026-06-11T19:47:51.012825900Z"
         }
       },
       "status": 200
@@ -258,13 +251,13 @@
         "message": "Notifications fetched",
         "data": [
           {
-            "notificationId": "15de58e6-b57c-4ad1-8b34-404c9f2586e8",
-            "userUid": "vuw2mFyufQWCDMW28XoFFmJdKB02",
+            "notificationId": "f763d438-ae53-4bec-85c3-dac1e9035dc4",
+            "userUid": "g8Sw6JYQhINsUQlExBQg28vqAGt2",
             "type": "APPLICATION_UPDATE",
             "title": "Application Status Update",
             "message": "Your application for E2E Senior Developer has been updated to SCREENING",
-            "actionUrl": "/applications/eceb2b91-7c54-4ade-8377-7edc8fa8a07e",
-            "createdAt": "2026-06-11T19:29:51.125157900Z",
+            "actionUrl": "/applications/6aabeb26-f227-4805-a9d9-84609153fb79",
+            "createdAt": "2026-06-11T19:47:50.245327200Z",
             "read": false
           }
         ]

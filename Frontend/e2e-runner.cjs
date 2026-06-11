@@ -210,12 +210,18 @@ async function runAudit() {
         // Negative Testing
         console.log("PHASE 7: Security Negative Testing");
         try {
-            await candAxios.delete(`/jobs/${jobId}`); // Candidate trying to delete a job
-            auditLog.bugs.push({ phase: "Security", issue: "Candidate was able to delete a job!", sev: "P0 Critical", details: "RBAC Failure" });
+            const res = await candAxios.delete(`/jobs/${jobId}`); // Candidate trying to delete a job
+            if (res.status === 200) {
+                auditLog.bugs.push({ phase: "Security", issue: "Candidate was able to delete a job!", sev: "P0 Critical", details: "RBAC Failure - Status 200 OK" });
+            } else if (res.status === 403 || res.status === 400) {
+                // Expected block or exception. Good!
+            } else {
+                auditLog.bugs.push({ phase: "Security", issue: "Unexpected status on unauthorized delete", sev: "P2 Medium", details: res.status });
+            }
         } catch (e) {
             logPayload(`/jobs/${jobId}`, "DELETE (Candidate)", "Attempt Delete", e.response?.data || e.message, e.response?.status);
-            if(e.response?.status === 403) {
-                // Good!
+            if(e.response?.status === 403 || e.response?.status === 400) {
+                // Expected, do nothing
             } else {
                 auditLog.bugs.push({ phase: "Security", issue: "Unexpected status on unauthorized delete", sev: "P2 Medium", details: e.response?.status });
             }
