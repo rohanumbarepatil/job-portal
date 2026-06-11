@@ -1,0 +1,14 @@
+server.port=8080
+
+gemini.api.key=${GEMINI_API_KEY}
+gemini.api.url=https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent
+
+# Spring Mail Configuration
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=${SMTP_USERNAME}
+spring.mail.password=${SMTP_PASSWORD}
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.jackson.deserialization.fail-on-null-for-primitives=false
+spring.jackson.deserialization.fail-on-unknown-properties=false

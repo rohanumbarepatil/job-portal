@@ -16,7 +16,7 @@ public class CompanyEntity {
     private String ownerUid; // Founder / Initial Creator
     private String companySlug; // e.g. "google" for /company/google
     private String verificationStatus; // PENDING, VERIFIED, REJECTED
-    private Boolean isHiring;
+    private boolean isHiring;
     private double rating;
     private int followers;
 

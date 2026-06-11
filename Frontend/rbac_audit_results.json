@@ -1,0 +1,826 @@
+{
+  "summary": {
+    "totalTests": 44,
+    "passed": 43,
+    "failed": 1,
+    "securityScore": "98%",
+    "breachCount": 0,
+    "totalBugs": 1,
+    "candidateRole": "ROLE_JOB_SEEKER",
+    "recruiterRole": "ROLE_PENDING_RECRUITER",
+    "productionReady": true
+  },
+  "matrix": [
+    {
+      "label": "Create Job",
+      "endpoint": "POST /jobs",
+      "candidate": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Delete Job",
+      "endpoint": "DELETE /jobs/nonexistent-id",
+      "candidate": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Search Jobs (public GET)",
+      "endpoint": "GET /jobs",
+      "candidate": {
+        "status": 200,
+        "expected": 200,
+        "pass": true
+      },
+      "recruiter": {
+        "status": 200,
+        "expected": 200,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 200,
+        "expected": 200,
+        "pass": true
+      }
+    },
+    {
+      "label": "Job Details (public GET)",
+      "endpoint": "GET /jobs/details/nonexistent",
+      "candidate": {
+        "status": 200,
+        "expected": [
+          200,
+          400
+        ],
+        "pass": true
+      },
+      "recruiter": {
+        "status": 200,
+        "expected": [
+          200,
+          400
+        ],
+        "pass": true
+      },
+      "noAuth": {
+        "status": 200,
+        "expected": [
+          200,
+          400
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Create Company",
+      "endpoint": "POST /companies",
+      "candidate": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Get My Companies",
+      "endpoint": "GET /companies/me",
+      "candidate": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          200,
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Update Company",
+      "endpoint": "PUT /companies/fake-id",
+      "candidate": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Apply for Job (Cand only)",
+      "endpoint": "POST /applications/apply/fake-job-id",
+      "candidate": {
+        "status": 400,
+        "expected": [
+          400
+        ],
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Get My Applications (Cand)",
+      "endpoint": "GET /applications/me",
+      "candidate": {
+        "status": 400,
+        "expected": [
+          200,
+          400
+        ],
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Get Job Applications (Rec)",
+      "endpoint": "GET /applications/job/fake-job-id",
+      "candidate": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Update App Status (Rec)",
+      "endpoint": "PATCH /applications/fake-id/status",
+      "candidate": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Schedule Interview (Rec)",
+      "endpoint": "POST /interviews",
+      "candidate": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Get Company Interviews (Rec)",
+      "endpoint": "GET /interviews/company",
+      "candidate": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Get My Interviews (any auth)",
+      "endpoint": "GET /interviews/me",
+      "candidate": {
+        "status": 400,
+        "expected": [
+          200,
+          400
+        ],
+        "pass": true
+      },
+      "recruiter": {
+        "status": 400,
+        "expected": [
+          200,
+          400
+        ],
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Interview Analytics (Rec)",
+      "endpoint": "GET /interviews/analytics",
+      "candidate": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Get Seeker Profile (Cand)",
+      "endpoint": "GET /seekers/me",
+      "candidate": {
+        "status": 200,
+        "expected": [
+          200,
+          400
+        ],
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Update Seeker Profile (Cand)",
+      "endpoint": "PUT /seekers/me",
+      "candidate": {
+        "status": 200,
+        "expected": [
+          200,
+          400
+        ],
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Resume Parse (Cand)",
+      "endpoint": "POST /seekers/resume/parse",
+      "candidate": {
+        "status": 500,
+        "expected": [
+          200,
+          400
+        ],
+        "pass": false
+      },
+      "recruiter": {
+        "status": 500,
+        "expected": 403,
+        "pass": false
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Public Profile (permitAll)",
+      "endpoint": "GET /seekers/public/testuser",
+      "candidate": {
+        "status": 400,
+        "expected": [
+          200,
+          400
+        ],
+        "pass": true
+      },
+      "recruiter": {
+        "status": 400,
+        "expected": [
+          200,
+          400
+        ],
+        "pass": true
+      },
+      "noAuth": {
+        "status": 400,
+        "expected": [
+          200,
+          400
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "AI Recommended Jobs (Cand)",
+      "endpoint": "GET /ai/recommendations/jobs",
+      "candidate": {
+        "status": 400,
+        "expected": [
+          200,
+          400
+        ],
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "AI Recommended Candidates (Rec)",
+      "endpoint": "GET /ai/recommendations/candidates/fake-id",
+      "candidate": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "AI Analytics (Rec)",
+      "endpoint": "GET /ai/analytics",
+      "candidate": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Get Notifications",
+      "endpoint": "GET /notifications",
+      "candidate": {
+        "status": 400,
+        "expected": [
+          200,
+          400
+        ],
+        "pass": true
+      },
+      "recruiter": {
+        "status": 400,
+        "expected": [
+          200,
+          400
+        ],
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Admin KPIs",
+      "endpoint": "GET /admin/analytics/kpis",
+      "candidate": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Admin Charts",
+      "endpoint": "GET /admin/analytics/charts",
+      "candidate": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Admin Verifications",
+      "endpoint": "GET /admin/verifications",
+      "candidate": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Admin Logs",
+      "endpoint": "GET /admin/logs",
+      "candidate": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    },
+    {
+      "label": "Admin Suspend User",
+      "endpoint": "PATCH /admin/users/fake-uid/suspend",
+      "candidate": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "recruiter": {
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      "noAuth": {
+        "status": 403,
+        "expected": [
+          401,
+          403
+        ],
+        "pass": true
+      }
+    }
+  ],
+  "escalation_attacks": [
+    {
+      "label": "Candidate → Delete Job",
+      "actor": "CANDIDATE",
+      "endpoint": "DELETE /jobs/fake-id",
+      "actualStatus": 403,
+      "blocked": true,
+      "message": "Forbidden: You do not have permission to perform this action."
+    },
+    {
+      "label": "Candidate → Create Job",
+      "actor": "CANDIDATE",
+      "endpoint": "POST /jobs",
+      "actualStatus": 403,
+      "blocked": true,
+      "message": "Forbidden: You do not have permission to perform this action."
+    },
+    {
+      "label": "Candidate → Create Company",
+      "actor": "CANDIDATE",
+      "endpoint": "POST /companies",
+      "actualStatus": 403,
+      "blocked": true,
+      "message": "Forbidden: You do not have permission to perform this action."
+    },
+    {
+      "label": "Candidate → Update ATS Status",
+      "actor": "CANDIDATE",
+      "endpoint": "PATCH /applications/x/status",
+      "actualStatus": 403,
+      "blocked": true,
+      "message": "Forbidden: You do not have permission to perform this action."
+    },
+    {
+      "label": "Candidate → Schedule Interview",
+      "actor": "CANDIDATE",
+      "endpoint": "POST /interviews",
+      "actualStatus": 403,
+      "blocked": true,
+      "message": "Forbidden: You do not have permission to perform this action."
+    },
+    {
+      "label": "Candidate → Admin KPIs",
+      "actor": "CANDIDATE",
+      "endpoint": "GET /admin/analytics/kpis",
+      "actualStatus": 403,
+      "blocked": true,
+      "message": ""
+    },
+    {
+      "label": "Candidate → Admin Suspend",
+      "actor": "CANDIDATE",
+      "endpoint": "PATCH /admin/users/x/suspend",
+      "actualStatus": 403,
+      "blocked": true,
+      "message": ""
+    },
+    {
+      "label": "Candidate → AI Candidate Recs",
+      "actor": "CANDIDATE",
+      "endpoint": "GET /ai/recommendations/candidates/x",
+      "actualStatus": 403,
+      "blocked": true,
+      "message": "Forbidden: You do not have permission to perform this action."
+    },
+    {
+      "label": "Recruiter → Admin KPIs",
+      "actor": "RECRUITER",
+      "endpoint": "GET /admin/analytics/kpis",
+      "actualStatus": 403,
+      "blocked": true,
+      "message": ""
+    },
+    {
+      "label": "Recruiter → Admin Suspend",
+      "actor": "RECRUITER",
+      "endpoint": "PATCH /admin/users/x/suspend",
+      "actualStatus": 403,
+      "blocked": true,
+      "message": ""
+    },
+    {
+      "label": "Recruiter → Seeker Profile",
+      "actor": "RECRUITER",
+      "endpoint": "GET /seekers/me",
+      "actualStatus": 403,
+      "blocked": true,
+      "message": "Forbidden: You do not have permission to perform this action."
+    },
+    {
+      "label": "Recruiter → Apply for Job",
+      "actor": "RECRUITER",
+      "endpoint": "POST /applications/apply/x",
+      "actualStatus": 403,
+      "blocked": true,
+      "message": "Forbidden: You do not have permission to perform this action."
+    },
+    {
+      "label": "Recruiter → AI Job Recs (cand only)",
+      "actor": "RECRUITER",
+      "endpoint": "GET /ai/recommendations/jobs",
+      "actualStatus": 403,
+      "blocked": true,
+      "message": "Forbidden: You do not have permission to perform this action."
+    },
+    {
+      "label": "NoAuth → Create Job",
+      "actor": "NO_AUTH",
+      "endpoint": "POST /jobs",
+      "actualStatus": 403,
+      "blocked": true,
+      "message": ""
+    },
+    {
+      "label": "NoAuth → Admin KPIs",
+      "actor": "NO_AUTH",
+      "endpoint": "GET /admin/analytics/kpis",
+      "actualStatus": 403,
+      "blocked": true,
+      "message": ""
+    },
+    {
+      "label": "NoAuth → Seeker Profile",
+      "actor": "NO_AUTH",
+      "endpoint": "GET /seekers/me",
+      "actualStatus": 403,
+      "blocked": true,
+      "message": ""
+    }
+  ],
+  "bugs": [
+    {
+      "label": "Resume Parse (Cand)",
+      "endpoint": "POST /seekers/resume/parse",
+      "candidate": {
+        "actual": 500,
+        "expected": [
+          200,
+          400
+        ],
+        "msg": "Internal Error: Current request is not a multipart request"
+      },
+      "recruiter": {
+        "actual": 500,
+        "expected": 403,
+        "msg": "Internal Error: Current request is not a multipart request"
+      },
+      "noAuth": {
+        "actual": 403,
+        "expected": [
+          401,
+          403
+        ]
+      }
+    }
+  ]
+}

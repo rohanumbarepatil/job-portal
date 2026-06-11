@@ -6,6 +6,7 @@ import com.jobportal.service.CompanyService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class CompanyController {
         this.companyService = companyService;
     }
 
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') or hasAuthority('ROLE_PENDING_RECRUITER') or hasAuthority('ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<GlobalResponse<CompanyEntity>> createCompany(@RequestBody CompanyEntity request) {
         try {
@@ -31,6 +33,7 @@ public class CompanyController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') or hasAuthority('ROLE_PENDING_RECRUITER') or hasAuthority('ROLE_ADMIN')")
     @GetMapping("/me")
     public ResponseEntity<GlobalResponse<List<CompanyEntity>>> getMyCompanies() {
         try {
@@ -42,6 +45,7 @@ public class CompanyController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') or hasAuthority('ROLE_PENDING_RECRUITER') or hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{companyId}")
     public ResponseEntity<GlobalResponse<CompanyEntity>> updateCompany(@PathVariable String companyId, @RequestBody CompanyEntity request) {
         try {

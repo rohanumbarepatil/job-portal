@@ -8,6 +8,7 @@ import com.jobportal.service.JobSeekerProfileService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,6 +34,7 @@ public class JobSeekerController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_JOB_SEEKER')")
     @GetMapping("/me")
     public ResponseEntity<GlobalResponse<JobSeekerProfile>> getMyProfile() {
         try {
@@ -44,6 +46,7 @@ public class JobSeekerController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_JOB_SEEKER')")
     @PutMapping("/me")
     public ResponseEntity<GlobalResponse<JobSeekerProfile>> updateMyProfile(@RequestBody JobSeekerProfile updateRequest) {
         try {
@@ -65,6 +68,7 @@ public class JobSeekerController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_JOB_SEEKER')")
     @PostMapping("/resume/parse")
     public ResponseEntity<GlobalResponse<String>> parseResume(@RequestParam("file") MultipartFile file) {
         try {

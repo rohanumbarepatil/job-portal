@@ -8,6 +8,7 @@ import com.jobportal.service.InterviewService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class InterviewController {
     }
 
     // --- Recruiter Endpoints ---
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') or hasAuthority('ROLE_PENDING_RECRUITER') or hasAuthority('ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<GlobalResponse<InterviewEntity>> scheduleInterview(@RequestBody InterviewEntity payload) {
         try {
@@ -37,6 +39,7 @@ public class InterviewController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') or hasAuthority('ROLE_PENDING_RECRUITER') or hasAuthority('ROLE_ADMIN')")
     @GetMapping("/company")
     public ResponseEntity<GlobalResponse<List<InterviewEntity>>> getRecruiterInterviews() {
         try {
@@ -48,6 +51,7 @@ public class InterviewController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') or hasAuthority('ROLE_PENDING_RECRUITER') or hasAuthority('ROLE_ADMIN')")
     @PostMapping("/{interviewId}/feedback")
     public ResponseEntity<GlobalResponse<Void>> submitFeedback(
             @PathVariable String interviewId,
@@ -98,6 +102,7 @@ public class InterviewController {
     }
 
     // --- Analytics ---
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') or hasAuthority('ROLE_PENDING_RECRUITER') or hasAuthority('ROLE_ADMIN')")
     @GetMapping("/analytics")
     public ResponseEntity<GlobalResponse<Map<String, Object>>> getAnalytics() {
         try {

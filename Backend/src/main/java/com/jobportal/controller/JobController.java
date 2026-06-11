@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
 @RestController
 @RequestMapping("/api/v1/jobs")
 public class JobController {
@@ -21,6 +24,7 @@ public class JobController {
         this.jobService = jobService;
     }
 
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') or hasAuthority('ROLE_PENDING_RECRUITER') or hasAuthority('ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<GlobalResponse<JobEntity>> createJob(@RequestBody JobEntity request) {
         try {
@@ -32,6 +36,7 @@ public class JobController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') or hasAuthority('ROLE_PENDING_RECRUITER') or hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{jobId}")
     public ResponseEntity<GlobalResponse<JobEntity>> updateJob(@PathVariable String jobId, @RequestBody JobEntity request) {
         try {
@@ -44,6 +49,7 @@ public class JobController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') or hasAuthority('ROLE_PENDING_RECRUITER') or hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{jobId}")
     public ResponseEntity<GlobalResponse<Void>> deleteJob(@PathVariable String jobId) {
         try {
@@ -56,6 +62,7 @@ public class JobController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') or hasAuthority('ROLE_PENDING_RECRUITER')")
     @GetMapping("/recruiter")
     public ResponseEntity<GlobalResponse<List<JobEntity>>> getRecruiterJobs() {
         try {
@@ -90,6 +97,7 @@ public class JobController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_JOB_SEEKER')")
     @PostMapping("/{jobId}/save")
     public ResponseEntity<GlobalResponse<SavedJobEntity>> saveJob(@PathVariable String jobId) {
         try {
@@ -101,6 +109,7 @@ public class JobController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_JOB_SEEKER')")
     @DeleteMapping("/{jobId}/unsave")
     public ResponseEntity<GlobalResponse<Void>> unsaveJob(@PathVariable String jobId) {
         try {
@@ -112,6 +121,7 @@ public class JobController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_JOB_SEEKER')")
     @GetMapping("/saved")
     public ResponseEntity<GlobalResponse<List<SavedJobEntity>>> getSavedJobs() {
         try {

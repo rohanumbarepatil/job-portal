@@ -10,6 +10,7 @@ import com.jobportal.service.ResumeRankingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,9 +26,9 @@ public class AIController {
     private final JobRepository jobRepository;
 
     public AIController(ResumeRankingService rankingService,
-                        CandidateRecommendationService recommendationService,
-                        AIAnalyticsService analyticsService,
-                        JobRepository jobRepository) {
+            CandidateRecommendationService recommendationService,
+            AIAnalyticsService analyticsService,
+            JobRepository jobRepository) {
         this.rankingService = rankingService;
         this.recommendationService = recommendationService;
         this.analyticsService = analyticsService;
@@ -35,11 +36,12 @@ public class AIController {
     }
 
     @GetMapping("/rankings/{jobId}/{candidateUid}")
-    public ResponseEntity<GlobalResponse<AICandidateRankingEntity>> getRanking(@PathVariable String jobId, @PathVariable String candidateUid) {
+    public ResponseEntity<GlobalResponse<AICandidateRankingEntity>> getRanking(@PathVariable String jobId,
+            @PathVariable String candidateUid) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String currentUser = auth.getName();
-            
+
             // Security: Candidate can only see their own. Recruiter must own the job.
             if (!currentUser.equals(candidateUid)) {
                 JobEntity job = jobRepository.findById(jobId);
@@ -55,22 +57,26 @@ public class AIController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_JOB_SEEKER')")
     @GetMapping("/recommendations/jobs")
     public ResponseEntity<GlobalResponse<List<AICandidateRankingEntity>>> getRecommendedJobs() {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            List<AICandidateRankingEntity> recommendations = recommendationService.getRecommendedJobsForCandidate(auth.getName());
+            List<AICandidateRankingEntity> recommendations = recommendationService
+                    .getRecommendedJobsForCandidate(auth.getName());
             return ResponseEntity.ok(GlobalResponse.success("Recommended jobs retrieved.", recommendations));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(GlobalResponse.error(e.getMessage()));
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') or hasAuthority('ROLE_PENDING_RECRUITER') or hasAuthority('ROLE_ADMIN')")
     @GetMapping("/recommendations/candidates/{jobId}")
-    public ResponseEntity<GlobalResponse<List<AICandidateRankingEntity>>> getRecommendedCandidates(@PathVariable String jobId) {
+    public ResponseEntity<GlobalResponse<List<AICandidateRankingEntity>>> getRecommendedCandidates(
+            @PathVariable String jobId) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            
+
             // Security: Recruiter must own the job.
             JobEntity job = jobRepository.findById(jobId);
             if (job == null || !job.getRecruiterUid().equals(auth.getName())) {
@@ -79,13 +85,19 @@ public class AIController {
 
             // For now, return existing cached rankings for this job sorted by score.
             // In a real scenario we'd do a batch evaluation over applied candidates.
-            List<AICandidateRankingEntity> rankings = rankingService.getOrGenerateRankingBatchForJob(jobId); // We'll assume the cache query method
+            List<AICandidateRankingEntity> rankings = rankingService.getOrGenerateRankingBatchForJob(jobId); // We'll
+                                                                                                             // assume
+                                                                                                             // the
+                                                                                                             // cache
+                                                                                                             // query
+                                                                                                             // method
             return ResponseEntity.ok(GlobalResponse.success("Recommended candidates retrieved.", rankings));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(GlobalResponse.error(e.getMessage()));
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') or hasAuthority('ROLE_PENDING_RECRUITER') or hasAuthority('ROLE_ADMIN')")
     @GetMapping("/analytics")
     public ResponseEntity<GlobalResponse<Map<String, Object>>> getAnalytics() {
         try {

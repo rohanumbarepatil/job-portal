@@ -30,7 +30,7 @@ public class CompanyService {
         company.setOwnerUid(ownerUid);
         company.setCompanySlug(request.getCompanySlug());
         company.setVerificationStatus("PENDING");
-        company.setHiring(false);
+        company.setIsHiring(false);
         company.setRating(0.0);
         company.setFollowers(0);
 
@@ -56,7 +56,9 @@ public class CompanyService {
 
         if (request.getCompanyInfo() != null) existing.setCompanyInfo(request.getCompanyInfo());
         if (request.getBranding() != null) existing.setBranding(request.getBranding());
-        existing.setHiring(request.isHiring());
+        if (request.getIsHiring() != null) {
+            existing.setIsHiring(request.getIsHiring());
+        }
 
         companyRepository.save(existing);
         return existing;

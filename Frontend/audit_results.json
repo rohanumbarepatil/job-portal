@@ -1,0 +1,275 @@
+{
+  "phases": {
+    "auth": "PASS"
+  },
+  "bugs": [
+    {
+      "phase": "Security",
+      "issue": "Candidate was able to delete a job!",
+      "sev": "P0 Critical",
+      "details": "RBAC Failure"
+    }
+  ],
+  "payloads": [
+    {
+      "endpoint": "Firebase Auth",
+      "method": "POST",
+      "request": "Credentials",
+      "response": "JWT Tokens Acquired",
+      "status": 200
+    },
+    {
+      "endpoint": "/companies",
+      "method": "POST",
+      "request": "Company Data",
+      "response": {
+        "success": true,
+        "message": "Company created",
+        "data": {
+          "companyId": "b1b9eb19-4c3a-43f1-b50c-4d9e7abf0388",
+          "ownerUid": "EYRpQySyQWbvmAjh7dH4wODykzr1",
+          "companySlug": "e2e-tech-1781206189200",
+          "verificationStatus": "PENDING",
+          "isHiring": false,
+          "rating": 0,
+          "followers": 0,
+          "teamMemberUids": [
+            "EYRpQySyQWbvmAjh7dH4wODykzr1"
+          ],
+          "teamMembers": [
+            {
+              "uid": "EYRpQySyQWbvmAjh7dH4wODykzr1",
+              "role": "OWNER"
+            }
+          ],
+          "companyInfo": {
+            "name": "E2E Tech Corp",
+            "industry": null,
+            "companySize": null,
+            "foundedYear": null,
+            "location": null,
+            "about": "Test Company"
+          },
+          "branding": {
+            "logoUrl": null,
+            "bannerUrl": null,
+            "cultureDescription": null,
+            "benefits": null,
+            "socialLinks": {
+              "linkedin": null,
+              "twitter": null,
+              "website": "https://e2etech.com"
+            },
+            "media": null
+          },
+          "analytics": {
+            "profileViews": 0,
+            "jobViews": 0,
+            "applicationsReceived": 0,
+            "conversionRate": 0
+          }
+        }
+      },
+      "status": 200
+    },
+    {
+      "endpoint": "/jobs",
+      "method": "POST",
+      "request": "Job Data",
+      "response": {
+        "success": true,
+        "message": "Job created successfully",
+        "data": {
+          "jobId": "a47592ac-4f55-4557-b656-b4610711b0e0",
+          "companyId": null,
+          "recruiterUid": "EYRpQySyQWbvmAjh7dH4wODykzr1",
+          "status": "ACTIVE",
+          "title": "E2E Senior Developer",
+          "description": "Must know integration testing.",
+          "requiredSkills": [
+            "Node.js",
+            "Java",
+            "Testing"
+          ],
+          "preferredSkills": null,
+          "benefits": null,
+          "locationType": "REMOTE",
+          "location": "Remote",
+          "employmentType": "FULL_TIME",
+          "experienceLevel": "MID",
+          "salaryRange": {
+            "min": 100000,
+            "max": 150000,
+            "currency": "USD",
+            "disclosed": true
+          },
+          "openPositions": 0,
+          "searchTags": null,
+          "companyMetadata": null,
+          "metrics": {
+            "views": 0,
+            "saves": 0,
+            "applications": 0
+          },
+          "applicationDeadline": null,
+          "createdAt": "2026-06-11T19:29:49.458151600Z",
+          "updatedAt": "2026-06-11T19:29:49.458151600Z",
+          "featured": false,
+          "urgentHiring": false
+        }
+      },
+      "status": 200
+    },
+    {
+      "endpoint": "/seekers/me",
+      "method": "PUT",
+      "request": "Profile Data",
+      "response": {
+        "success": true,
+        "message": "Profile updated",
+        "data": {
+          "uid": "vuw2mFyufQWCDMW28XoFFmJdKB02",
+          "username": null,
+          "profileVisibility": null,
+          "openToWork": false,
+          "profileViews": 0,
+          "headline": "Experienced QA and Developer",
+          "personalInfo": null,
+          "skills": [
+            "Node.js",
+            "Testing",
+            "Java"
+          ],
+          "education": [
+            {
+              "degree": "BS Computer Science",
+              "institution": "Tech University",
+              "startYear": "2016",
+              "endYear": "2020"
+            }
+          ],
+          "experience": [
+            {
+              "title": "Senior Developer",
+              "company": "ATS Builders Inc",
+              "startDate": "2020",
+              "endDate": "2024",
+              "description": "Built ATS systems",
+              "current": true
+            }
+          ],
+          "projects": null,
+          "certifications": null,
+          "achievements": null,
+          "socialLinks": null,
+          "resume": null,
+          "metrics": {
+            "profileCompletionPercentage": 50,
+            "atsScore": 25,
+            "strength": "Intermediate"
+          }
+        }
+      },
+      "status": 200
+    },
+    {
+      "endpoint": "/applications/apply/a47592ac-4f55-4557-b656-b4610711b0e0",
+      "method": "POST",
+      "request": {
+        "jobId": "a47592ac-4f55-4557-b656-b4610711b0e0"
+      },
+      "response": {
+        "success": true,
+        "message": "Application submitted successfully",
+        "data": {
+          "applicationId": "eceb2b91-7c54-4ade-8377-7edc8fa8a07e",
+          "jobId": "a47592ac-4f55-4557-b656-b4610711b0e0",
+          "companyId": null,
+          "candidateUid": "vuw2mFyufQWCDMW28XoFFmJdKB02",
+          "recruiterUid": "EYRpQySyQWbvmAjh7dH4wODykzr1",
+          "resumeUrl": null,
+          "coverLetter": "I am perfect for this E2E job.",
+          "atsMatchScore": 35,
+          "status": "APPLIED",
+          "candidateSnapshot": {
+            "name": "Candidate Name",
+            "email": "email@test.com",
+            "headline": "Headline",
+            "skills": [
+              "Java"
+            ]
+          },
+          "jobSnapshot": {
+            "title": "E2E Senior Developer",
+            "companyName": ""
+          },
+          "createdAt": "2026-06-11T19:29:50.196895900Z",
+          "updatedAt": "2026-06-11T19:29:50.196895900Z"
+        }
+      },
+      "status": 200
+    },
+    {
+      "endpoint": "/applications/eceb2b91-7c54-4ade-8377-7edc8fa8a07e/status",
+      "method": "PATCH",
+      "request": {
+        "status": "SCREENING"
+      },
+      "response": {
+        "success": true,
+        "message": "Status updated to SCREENING",
+        "data": null
+      },
+      "status": 200
+    },
+    {
+      "endpoint": "/ai/rankings",
+      "method": "GET",
+      "request": {
+        "jobId": "a47592ac-4f55-4557-b656-b4610711b0e0",
+        "uid": "vuw2mFyufQWCDMW28XoFFmJdKB02"
+      },
+      "response": {
+        "success": true,
+        "message": "Ranking retrieved.",
+        "data": {
+          "rankingId": "a47592ac-4f55-4557-b656-b4610711b0e0_vuw2mFyufQWCDMW28XoFFmJdKB02",
+          "candidateUid": "vuw2mFyufQWCDMW28XoFFmJdKB02",
+          "jobId": "a47592ac-4f55-4557-b656-b4610711b0e0",
+          "totalScore": 0,
+          "skillsMatch": 0,
+          "experienceMatch": 0,
+          "educationMatch": 0,
+          "profileStrength": 0,
+          "resumeQuality": 0,
+          "aiExplanation": "AI Evaluation temporarily unavailable.",
+          "stale": false,
+          "updatedAt": "2026-06-11T19:29:52.209786800Z"
+        }
+      },
+      "status": 200
+    },
+    {
+      "endpoint": "/notifications",
+      "method": "GET",
+      "request": "Fetch Unread",
+      "response": {
+        "success": true,
+        "message": "Notifications fetched",
+        "data": [
+          {
+            "notificationId": "15de58e6-b57c-4ad1-8b34-404c9f2586e8",
+            "userUid": "vuw2mFyufQWCDMW28XoFFmJdKB02",
+            "type": "APPLICATION_UPDATE",
+            "title": "Application Status Update",
+            "message": "Your application for E2E Senior Developer has been updated to SCREENING",
+            "actionUrl": "/applications/eceb2b91-7c54-4ade-8377-7edc8fa8a07e",
+            "createdAt": "2026-06-11T19:29:51.125157900Z",
+            "read": false
+          }
+        ]
+      },
+      "status": 200
+    }
+  ]
+}

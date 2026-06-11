@@ -22,13 +22,20 @@ public class NotificationRepository {
 
     public List<NotificationEntity> findByUserUid(String userUid) throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
+        // Removed orderBy to prevent composite index requirement in Firestore
         Query query = db.collection(COLLECTION_NAME)
-                .whereEqualTo("userUid", userUid)
-                .orderBy("createdAt", Query.Direction.DESCENDING)
-                .limit(50);
+                .whereEqualTo("userUid", userUid);
         List<NotificationEntity> notifications = new ArrayList<>();
         for (QueryDocumentSnapshot doc : query.get().get().getDocuments()) {
             notifications.add(doc.toObject(NotificationEntity.class));
+        }
+        
+        // Sort in memory (descending by createdAt)
+        notifications.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
+        
+        // Limit to 50
+        if (notifications.size() > 50) {
+            return notifications.subList(0, 50);
         }
         return notifications;
     }

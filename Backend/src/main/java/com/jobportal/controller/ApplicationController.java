@@ -7,6 +7,7 @@ import com.jobportal.service.ApplicationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class ApplicationController {
         this.applicationService = applicationService;
     }
 
+    @PreAuthorize("hasAuthority('ROLE_JOB_SEEKER')")
     @PostMapping("/apply/{jobId}")
     public ResponseEntity<GlobalResponse<ApplicationEntity>> applyForJob(
             @PathVariable String jobId,
@@ -38,6 +40,7 @@ public class ApplicationController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_JOB_SEEKER')")
     @GetMapping("/me")
     public ResponseEntity<GlobalResponse<List<ApplicationEntity>>> getMyApplications() {
         try {
@@ -70,6 +73,7 @@ public class ApplicationController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') or hasAuthority('ROLE_PENDING_RECRUITER') or hasAuthority('ROLE_ADMIN')")
     @GetMapping("/job/{jobId}")
     public ResponseEntity<GlobalResponse<List<ApplicationEntity>>> getJobApplications(@PathVariable String jobId) {
         try {
@@ -81,6 +85,7 @@ public class ApplicationController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') or hasAuthority('ROLE_PENDING_RECRUITER') or hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/{applicationId}/status")
     public ResponseEntity<GlobalResponse<Void>> updateApplicationStatus(
             @PathVariable String applicationId,

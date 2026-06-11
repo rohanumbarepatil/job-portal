@@ -22,7 +22,7 @@ public class GeminiMatchingService {
     @Value("${gemini.api.key}")
     private String apiKey;
 
-    @Value("${gemini.api.url}")
+    @Value("${gemini.api.url:https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent}")
     private String apiUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -64,9 +64,11 @@ public class GeminiMatchingService {
     private String buildPrompt(JobEntity job, JobSeekerProfile profile) {
         // Strip PII and build context
         StringBuilder p = new StringBuilder();
-        p.append("You are an expert ATS AI Assistant. Your job is to strictly evaluate a candidate against a job posting.\n");
-        p.append("Output STRICTLY in JSON format with NO markdown wrapping, NO backticks. Only return the raw JSON object.\n\n");
-        
+        p.append(
+                "You are an expert ATS AI Assistant. Your job is to strictly evaluate a candidate against a job posting.\n");
+        p.append(
+                "Output STRICTLY in JSON format with NO markdown wrapping, NO backticks. Only return the raw JSON object.\n\n");
+
         p.append("Expected JSON Schema:\n");
         p.append("{\n");
         p.append("  \"skillsMatch\": 0-40,\n");
@@ -87,21 +89,25 @@ public class GeminiMatchingService {
         p.append("--- CANDIDATE PROFILE ---\n");
         p.append("Headline: ").append(profile.getHeadline()).append("\n");
         p.append("Skills: ").append(profile.getSkills()).append("\n");
-        p.append("Experience: ").append(profile.getExperience() != null ? profile.getExperience().toString() : "None").append("\n");
-        p.append("Education: ").append(profile.getEducation() != null ? profile.getEducation().toString() : "None").append("\n");
-        
+        p.append("Experience: ").append(profile.getExperience() != null ? profile.getExperience().toString() : "None")
+                .append("\n");
+        p.append("Education: ").append(profile.getEducation() != null ? profile.getEducation().toString() : "None")
+                .append("\n");
+
         return p.toString();
     }
 
     private GeminiRankingResponseDTO parseGeminiResponse(String rawResponse) {
         try {
-            // The actual JSON is inside a deeply nested response object from Gemini REST API
-            // Form: { "candidates": [ { "content": { "parts": [ { "text": "{ ... }" } ] } } ] }
+            // The actual JSON is inside a deeply nested response object from Gemini REST
+            // API
+            // Form: { "candidates": [ { "content": { "parts": [ { "text": "{ ... }" } ] } }
+            // ] }
             var root = objectMapper.readTree(rawResponse);
             String jsonText = root.path("candidates").get(0)
-                                 .path("content")
-                                 .path("parts").get(0)
-                                 .path("text").asText();
+                    .path("content")
+                    .path("parts").get(0)
+                    .path("text").asText();
 
             // Clean markdown backticks if Gemini ignored instructions
             jsonText = jsonText.replace("```json", "").replace("```", "").trim();
