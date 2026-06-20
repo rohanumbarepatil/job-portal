@@ -17,7 +17,7 @@ public class CompanyService {
     }
 
     public boolean isSlugAvailable(String slug) throws Exception {
-        return companyRepository.findBySlug(slug) == null;
+        return companyRepository.findByCompanySlug(slug).isEmpty();
     }
 
     public CompanyEntity createCompany(String ownerUid, CompanyEntity request) throws Exception {
@@ -47,7 +47,7 @@ public class CompanyService {
     }
 
     public CompanyEntity updateCompany(String uid, String companyId, CompanyEntity request) throws Exception {
-        CompanyEntity existing = companyRepository.findById(companyId);
+        CompanyEntity existing = companyRepository.findById(companyId).orElse(null);
         if (existing == null) throw new RuntimeException("Company not found");
 
         if (existing.getTeamMemberUids() == null || !existing.getTeamMemberUids().contains(uid)) {
@@ -65,11 +65,11 @@ public class CompanyService {
     }
 
     public List<CompanyEntity> getMyCompanies(String uid) throws Exception {
-        return companyRepository.findByTeamMemberUid(uid);
+        return companyRepository.findByTeamMemberUidsContaining(uid);
     }
 
     public CompanyEntity getCompanyBySlug(String slug) throws Exception {
-        CompanyEntity company = companyRepository.findBySlug(slug);
+        CompanyEntity company = companyRepository.findByCompanySlug(slug).orElse(null);
         if (company == null) throw new RuntimeException("Company not found");
         
         CompanyEntity.Analytics a = company.getAnalytics();
@@ -78,5 +78,9 @@ public class CompanyService {
             companyRepository.save(company);
         }
         return company;
+    }
+
+    public List<CompanyEntity> getFeaturedCompanies() {
+        return companyRepository.findTop8ByOrderByFollowersDesc();
     }
 }

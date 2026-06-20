@@ -1,17 +1,15 @@
 import axios from 'axios';
-import { auth } from '../config/firebase';
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8080/api/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081/api/v1',
   headers: {
     'Content-Type': 'application/json'
   }
 });
 
 axiosInstance.interceptors.request.use(async (config) => {
-  const user = auth.currentUser;
-  if (user) {
-    const token = await user.getIdToken();
+  const token = localStorage.getItem('token');
+  if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;

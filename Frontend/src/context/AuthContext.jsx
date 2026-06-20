@@ -1,16 +1,4 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged,
-  GoogleAuthProvider,
-  signInWithPopup,
-  sendPasswordResetEmail,
-  setPersistence,
-  browserLocalPersistence
-} from 'firebase/auth';
-import { auth } from '../config/firebase';
 import axiosInstance from '../utils/axiosInstance';
 
 const AuthContext = createContext();
@@ -25,89 +13,89 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   async function register(email, password, fullName, role) {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    
     try {
       const response = await axiosInstance.post('/auth/register', {
-        email: user.email,
+        email: email,
+        password: password,
         fullName: fullName,
         role: role,
         provider: 'EMAIL'
       });
       
-      setDbUser(response.data.data);
-      // Force refresh token to pull the new Custom Claims injected by backend
-      await user.getIdToken(true); 
+      const { token, user } = response.data.data;
+      localStorage.setItem('token', token);
+      
+      setCurrentUser(user);
+      setDbUser(user);
       return user;
     } catch (error) {
-      // Rollback orphaned account
-      await user.delete();
-      await signOut(auth);
+      console.error("Registration failed:", error);
       throw error;
     }
   }
 
   async function login(email, password) {
-    await setPersistence(auth, browserLocalPersistence);
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    
-    // Login API now extracts uid from JWT, requires no payload
-    const response = await axiosInstance.post('/auth/login');
-    setDbUser(response.data.data);
-    return userCredential.user;
-  }
-
-  async function loginWithGoogle() {
-    await setPersistence(auth, browserLocalPersistence);
-    const provider = new GoogleAuthProvider();
-    const userCredential = await signInWithPopup(auth, provider);
-    const user = userCredential.user;
-    
     try {
-      const response = await axiosInstance.post('/auth/google', {
-        email: user.email,
-        fullName: user.displayName,
-        role: 'ROLE_JOB_SEEKER',
-        provider: 'GOOGLE'
+      const response = await axiosInstance.post('/auth/login', {
+        email: email,
+        password: password
       });
-      setDbUser(response.data.data);
-      await user.getIdToken(true);
+      
+      const { token, user } = response.data.data;
+      localStorage.setItem('token', token);
+      
+      setCurrentUser(user);
+      setDbUser(user);
       return user;
     } catch (error) {
-      await user.delete();
-      await signOut(auth);
+      console.error("Login failed:", error);
       throw error;
     }
   }
 
+  async function loginWithGoogle() {
+    // Note: Google login without Firebase usually involves redirecting to backend OAuth endpoint
+    // We will keep this as a stub that requires further backend support (e.g., OAuth2 Login)
+    console.warn("Google Login requires OAuth2 implementation on Spring Boot backend.");
+    alert("Google login is temporarily disabled during migration.");
+    throw new Error("Not implemented yet");
+  }
+
   function logout() {
-    axiosInstance.post('/auth/logout').catch(console.error);
+    localStorage.removeItem('token');
+    setCurrentUser(null);
     setDbUser(null);
-    return signOut(auth);
   }
 
   function resetPassword(email) {
-    return sendPasswordResetEmail(auth, email);
+    // Requires a forgot-password endpoint on the backend
+    console.warn("Reset password not fully implemented in backend yet.");
+    return Promise.resolve();
   }
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user);
-      if (user && !dbUser) {
+    const fetchUser = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
         try {
+          // Verify token and get user details
           const response = await axiosInstance.get('/auth/me');
+          setCurrentUser(response.data.data);
           setDbUser(response.data.data);
         } catch (error) {
-          console.error("Error fetching DB user", error);
+          console.error("Error fetching DB user, token might be invalid", error);
+          localStorage.removeItem('token');
+          setCurrentUser(null);
+          setDbUser(null);
         }
-      } else if (!user) {
+      } else {
+        setCurrentUser(null);
         setDbUser(null);
       }
       setLoading(false);
-    });
+    };
 
-    return unsubscribe;
+    fetchUser();
   }, []);
 
   const value = {

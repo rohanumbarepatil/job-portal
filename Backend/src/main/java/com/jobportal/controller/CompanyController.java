@@ -66,4 +66,14 @@ public class CompanyController {
             return ResponseEntity.badRequest().body(GlobalResponse.error(e.getMessage()));
         }
     }
+
+    @GetMapping("/featured")
+    public ResponseEntity<GlobalResponse<List<CompanyEntity>>> getFeaturedCompanies() {
+        try {
+            List<CompanyEntity> companies = companyService.getFeaturedCompanies();
+            return ResponseEntity.ok(GlobalResponse.success("Fetched featured companies", companies));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(GlobalResponse.error(e.getMessage()));
+        }
+    }
 }

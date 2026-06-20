@@ -11,6 +11,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import com.jobportal.repository.UserRepository;
+
 @Service
 public class InterviewService {
     
@@ -18,15 +20,18 @@ public class InterviewService {
     private final InterviewFeedbackRepository feedbackRepository;
     private final ApplicationService applicationService;
     private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
     public InterviewService(InterviewRepository interviewRepository, 
                             InterviewFeedbackRepository feedbackRepository,
                             ApplicationService applicationService,
-                            NotificationService notificationService) {
+                            NotificationService notificationService,
+                            UserRepository userRepository) {
         this.interviewRepository = interviewRepository;
         this.feedbackRepository = feedbackRepository;
         this.applicationService = applicationService;
         this.notificationService = notificationService;
+        this.userRepository = userRepository;
     }
 
     public InterviewEntity scheduleInterview(String recruiterUid, String applicationId, InterviewEntity payload) throws Exception {
@@ -44,6 +49,8 @@ public class InterviewService {
                 .companyId(app.getCompanyId())
                 .roundName(payload.getRoundName())
                 .roundType(payload.getRoundType())
+                .interviewMode(payload.getInterviewMode())
+                .interviewerName(payload.getInterviewerName())
                 .status("SCHEDULED")
                 .scheduledAt(payload.getScheduledAt())
                 .durationMinutes(payload.getDurationMinutes())
@@ -61,15 +68,20 @@ public class InterviewService {
                 "Interview Scheduled: " + payload.getRoundName() + " on " + payload.getScheduledAt());
 
         // Notify Candidate
+        String candidateEmail = userRepository.findById(app.getCandidateUid()).map(com.jobportal.entity.UserEntity::getEmail).orElse(null);
+        String locationStr = "ONLINE".equalsIgnoreCase(payload.getInterviewMode()) ? payload.getMeetingLink() : payload.getLocation();
+        String message = String.format("You have a new %s interview scheduled for %s on %s. Mode: %s. Details: %s", 
+                payload.getRoundType(), app.getJobSnapshot().getTitle(), payload.getScheduledAt(), payload.getInterviewMode(), locationStr);
+        
         notificationService.sendNotification(app.getCandidateUid(), "INTERVIEW_SCHEDULED", 
-                "Interview Scheduled", "You have a new interview for " + app.getJobSnapshot().getTitle(), 
-                "/dashboard/interviews");
+                "Interview Scheduled: " + payload.getRoundName(), message, 
+                "/dashboard/interviews", candidateEmail);
 
         return interview;
     }
 
     public void submitFeedback(String recruiterUid, String interviewId, InterviewFeedbackEntity feedbackPayload, String nextStepStatus) throws Exception {
-        InterviewEntity interview = interviewRepository.findById(interviewId);
+        InterviewEntity interview = interviewRepository.findById(interviewId).orElse(null);
         if (interview == null || !interview.getRecruiterUid().equals(recruiterUid)) {
             throw new RuntimeException("Unauthorized");
         }
@@ -95,18 +107,18 @@ public class InterviewService {
     }
 
     public List<InterviewEntity> getCandidateInterviews(String candidateUid) throws Exception {
-        return interviewRepository.findByCandidateUid(candidateUid);
+        return interviewRepository.findByCandidateUidOrderByScheduledAtDesc(candidateUid);
     }
 
     public List<InterviewEntity> getRecruiterInterviews(String recruiterUid) throws Exception {
-        return interviewRepository.findByRecruiterUid(recruiterUid);
+        return interviewRepository.findByRecruiterUidOrderByScheduledAtDesc(recruiterUid);
     }
     
     public InterviewFeedbackEntity getFeedback(String recruiterUid, String interviewId) throws Exception {
-        InterviewEntity interview = interviewRepository.findById(interviewId);
+        InterviewEntity interview = interviewRepository.findById(interviewId).orElse(null);
         if (interview == null || !interview.getRecruiterUid().equals(recruiterUid)) {
             throw new RuntimeException("Unauthorized");
         }
-        return feedbackRepository.findByInterviewId(interviewId);
+        return feedbackRepository.findByInterviewId(interviewId).orElse(null);
     }
 }

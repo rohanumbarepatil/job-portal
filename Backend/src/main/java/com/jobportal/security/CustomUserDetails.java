@@ -1,32 +1,42 @@
 package com.jobportal.security;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import com.jobportal.entity.UserEntity;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Collections;
 
-@Data
-@AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
-    private String uid;
-    private String email;
-    private Collection<? extends GrantedAuthority> authorities;
+
+    private final UserEntity user;
+
+    public CustomUserDetails(UserEntity user) {
+        this.user = user;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
+        return Collections.singletonList(new SimpleGrantedAuthority(user.getRole()));
     }
 
     @Override
     public String getPassword() {
-        return null; // Firebase handles passwords
+        return user.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return uid; // Using UID as primary identifier
+        return user.getUid(); // Return UID so auth.getName() works correctly
+    }
+
+    public String getUid() {
+        return user.getUid();
+    }
+    
+    public UserEntity getUser() {
+        return user;
     }
 
     @Override
@@ -36,7 +46,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return user.isActive();
     }
 
     @Override
@@ -46,6 +56,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return user.isActive();
     }
 }

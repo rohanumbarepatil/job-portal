@@ -1,84 +1,39 @@
 package com.jobportal.repository;
 
-import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.*;
-import com.google.firebase.cloud.FirestoreClient;
 import com.jobportal.entity.JobEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 @Repository
-public class JobRepository {
-    private static final String COLLECTION_NAME = "jobs";
+public interface JobRepository extends JpaRepository<JobEntity, String>, JpaSpecificationExecutor<JobEntity> {
 
-    public void save(JobEntity job) throws ExecutionException, InterruptedException {
-        Firestore db = FirestoreClient.getFirestore();
-        db.collection(COLLECTION_NAME).document(job.getJobId()).set(job).get();
-    }
+    List<JobEntity> findByRecruiterUid(String recruiterUid);
+    
+    List<JobEntity> findByRecruiterUidOrderByCreatedAtDesc(String recruiterUid);
 
-    public void delete(String jobId) throws ExecutionException, InterruptedException {
-        Firestore db = FirestoreClient.getFirestore();
-        db.collection(COLLECTION_NAME).document(jobId).delete().get();
-    }
+    @Query("SELECT j FROM JobEntity j WHERE j.status = 'ACTIVE' ORDER BY j.createdAt DESC")
+    List<JobEntity> findActiveJobs();
 
-    public JobEntity findById(String jobId) throws ExecutionException, InterruptedException {
-        Firestore db = FirestoreClient.getFirestore();
-        DocumentSnapshot doc = db.collection(COLLECTION_NAME).document(jobId).get().get();
-        if (doc.exists()) {
-            return doc.toObject(JobEntity.class);
-        }
-        return null;
-    }
-
-    public List<JobEntity> findByRecruiterUid(String recruiterUid) throws ExecutionException, InterruptedException {
-        Firestore db = FirestoreClient.getFirestore();
-        Query query = db.collection(COLLECTION_NAME).whereEqualTo("recruiterUid", recruiterUid);
-        List<JobEntity> jobs = new ArrayList<>();
-        for (QueryDocumentSnapshot doc : query.get().get().getDocuments()) {
-            jobs.add(doc.toObject(JobEntity.class));
-        }
-        return jobs;
-    }
-
-    public List<JobEntity> findActiveJobs() throws ExecutionException, InterruptedException {
-        Firestore db = FirestoreClient.getFirestore();
-        Query query = db.collection(COLLECTION_NAME).whereEqualTo("status", "ACTIVE").orderBy("createdAt", Query.Direction.DESCENDING).limit(50);
-        List<JobEntity> jobs = new ArrayList<>();
-        for (QueryDocumentSnapshot doc : query.get().get().getDocuments()) {
-            jobs.add(doc.toObject(JobEntity.class));
-        }
-        return jobs;
-    }
-
-    public List<JobEntity> searchActiveJobs(String keyword, String location, String type) throws ExecutionException, InterruptedException {
-        Firestore db = FirestoreClient.getFirestore();
-        Query query = db.collection(COLLECTION_NAME).whereEqualTo("status", "ACTIVE");
-
-        if (keyword != null && !keyword.isEmpty()) {
-            query = query.whereArrayContains("searchTags", keyword.toLowerCase());
-        }
-        if (location != null && !location.isEmpty()) {
-            query = query.whereEqualTo("location", location);
-        }
-        if (type != null && !type.isEmpty()) {
-            query = query.whereEqualTo("employmentType", type);
-        }
-        
-        query = query.limit(50);
-        
-        List<JobEntity> jobs = new ArrayList<>();
-        for (QueryDocumentSnapshot doc : query.get().get().getDocuments()) {
-            jobs.add(doc.toObject(JobEntity.class));
-        }
-        return jobs;
-    }
-
-    public void incrementMetric(String jobId, String metricField, int amount) {
-        Firestore db = FirestoreClient.getFirestore();
-        DocumentReference docRef = db.collection(COLLECTION_NAME).document(jobId);
-        docRef.update("metrics." + metricField, FieldValue.increment(amount));
-    }
+    // Note: For searchActiveJobs, we will use a custom specification or QueryDSL in the service layer, 
+    // or a simplified query here. Here is a simplified version:
+    @Query("SELECT j FROM JobEntity j JOIN j.searchTags t WHERE j.status = 'ACTIVE' " +
+           "AND (:keyword IS NULL OR t = :keyword) " +
+           "AND (:location IS NULL OR j.location = :location) " +
+           "AND (:type IS NULL OR j.employmentType = :type)")
+    List<JobEntity> searchActiveJobs(String keyword, String location, String type);
+    
+    long countByStatus(String status);
+    
+    List<JobEntity> findTop10ByOrderByCreatedAtDesc();
+    
+    @Query("SELECT j FROM JobEntity j WHERE " +
+           "(:status IS NULL OR j.status = :status) AND " +
+           "(:search IS NULL OR LOWER(j.title) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "ORDER BY j.createdAt DESC")
+    List<JobEntity> findByStatusAndSearch(@Param("status") String status, @Param("search") String search);
 }

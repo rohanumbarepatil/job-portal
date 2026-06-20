@@ -1,36 +1,28 @@
 package com.jobportal.repository;
 
-import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.WriteResult;
-import com.google.firebase.cloud.FirestoreClient;
 import com.jobportal.entity.UserEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.concurrent.ExecutionException;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
-public class UserRepository {
-    private static final String COLLECTION_NAME = "users";
-
-    public UserEntity findById(String uid) throws ExecutionException, InterruptedException {
-        Firestore db = FirestoreClient.getFirestore();
-        DocumentReference docRef = db.collection(COLLECTION_NAME).document(uid);
-        ApiFuture<DocumentSnapshot> future = docRef.get();
-        DocumentSnapshot document = future.get();
-        if (document.exists()) {
-            return document.toObject(UserEntity.class);
-        }
-        return null;
-    }
-
-    public String save(UserEntity user) throws ExecutionException, InterruptedException {
-        Firestore db = FirestoreClient.getFirestore();
-        ApiFuture<WriteResult> collectionsApiFuture = db.collection(COLLECTION_NAME)
-                .document(user.getUid())
-                .set(user);
-        return collectionsApiFuture.get().getUpdateTime().toString();
-    }
+public interface UserRepository extends JpaRepository<UserEntity, String> {
+    Optional<UserEntity> findByEmail(String email);
+    
+    long countByRole(String role);
+    long countByIsActive(boolean isActive);
+    
+    List<UserEntity> findByRoleOrderByCreatedAtDesc(String role);
+    
+    @Query("SELECT u FROM UserEntity u WHERE " +
+           "(:role IS NULL OR u.role = :role) AND " +
+           "(:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "ORDER BY u.createdAt DESC")
+    List<UserEntity> findByRoleAndSearch(@Param("role") String role, @Param("search") String search);
+    
+    List<UserEntity> findTop10ByOrderByCreatedAtDesc();
 }

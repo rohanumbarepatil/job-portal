@@ -44,23 +44,49 @@ public class ResumeRankingService {
 
     public AICandidateRankingEntity getOrGenerateRanking(String jobId, String candidateUid) throws Exception {
         String rankingId = jobId + "_" + candidateUid;
-        AICandidateRankingEntity cachedRanking = rankingRepository.findById(rankingId);
+        AICandidateRankingEntity cachedRanking = rankingRepository.findById(rankingId).orElse(null);
 
         if (cachedRanking != null && !cachedRanking.isStale()) {
             return cachedRanking; // Cache Hit
         }
 
         // Cache Miss or Stale -> Lazy Evaluation
-        JobEntity job = jobRepository.findById(jobId);
+        JobEntity job = jobRepository.findById(jobId).orElse(null);
         if (job == null)
             throw new RuntimeException("Job not found");
 
-        JobSeekerProfile profile = profileRepository.findById(candidateUid);
+        JobSeekerProfile profile = profileRepository.findById(candidateUid).orElse(null);
         if (profile == null)
             throw new RuntimeException("Profile not found");
 
-        // 1. Call Gemini
-        GeminiRankingResponseDTO dto = geminiService.rankCandidate(job, profile);
+        GeminiRankingResponseDTO dto;
+        try {
+            // 1. Call Gemini
+            dto = geminiService.rankCandidate(job, profile);
+        } catch (Exception e) {
+            System.err.println("Gemini AI failed, using fallback keyword matching: " + e.getMessage());
+            // Fallback Logic: Count matched skills
+            String reqSkills = job.getRequiredSkills() != null ? job.getRequiredSkills().toString().toLowerCase() : "";
+            String userSkills = profile.getSkills() != null ? profile.getSkills().toString().toLowerCase() : "";
+            int matchCount = 0;
+            String[] reqArray = reqSkills.split("[,\\s]+");
+            for (String s : reqArray) {
+                if (!s.isEmpty() && userSkills.contains(s)) {
+                    matchCount++;
+                }
+            }
+            int totalScore = reqArray.length > 0 ? (int) Math.min(100, ((double) matchCount / reqArray.length) * 100 + 30) : 50; // Give a baseline 30
+            
+            dto = GeminiRankingResponseDTO.builder()
+                    .totalScore(totalScore)
+                    .skillsMatch(Math.min(40, (int)((double)matchCount/Math.max(1, reqArray.length) * 40)))
+                    .experienceMatch(20)
+                    .educationMatch(10)
+                    .profileStrength(10)
+                    .resumeQuality(10)
+                    .aiExplanation("Score generated via fallback keyword matching due to AI service unavailability.")
+                    .build();
+        }
 
         // 2. Save Ranking
         AICandidateRankingEntity ranking = AICandidateRankingEntity.builder()
@@ -119,7 +145,7 @@ public class ResumeRankingService {
 
     public List<AICandidateRankingEntity> getOrGenerateRankingBatchForJob(String jobId) throws Exception {
         // Fetch all candidates who applied to this job
-        List<ApplicationEntity> applications = applicationRepository.findByJobId(jobId);
+        List<ApplicationEntity> applications = applicationRepository.findByJobIdOrderByCreatedAtDesc(jobId);
         List<AICandidateRankingEntity> rankings = new ArrayList<>();
 
         for (ApplicationEntity app : applications) {

@@ -10,6 +10,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import com.jobportal.repository.CompanyRepository;
+import com.jobportal.repository.JobSpecification;
+import org.springframework.data.jpa.domain.Specification;
 
 @Service
 public class JobService {
@@ -41,12 +43,30 @@ public class JobService {
             request.setMetrics(new JobEntity.Metrics(0, 0, 0));
         }
 
+        // Fetch company and set companyId and companyMetadata
+        var companyList = companyRepository.findByTeamMemberUidsContaining(recruiterUid);
+        if (companyList != null && !companyList.isEmpty()) {
+            var company = companyList.get(0);
+            request.setCompanyId(company.getCompanyId());
+            
+            String compName = company.getCompanyInfo() != null ? company.getCompanyInfo().getName() : null;
+            String compLogo = company.getBranding() != null ? company.getBranding().getLogoUrl() : null;
+            
+            request.setCompanyMetadata(new JobEntity.CompanyMetadata(
+                compName,
+                compLogo,
+                company.getCompanySlug()
+            ));
+        } else {
+            throw new RuntimeException("Recruiter must create a company profile first.");
+        }
+
         jobRepository.save(request);
         return request;
     }
 
     public JobEntity updateJob(String recruiterUid, String jobId, JobEntity request, boolean isAdmin) throws Exception {
-        JobEntity existing = jobRepository.findById(jobId);
+        JobEntity existing = jobRepository.findById(jobId).orElse(null);
         if (existing == null) {
             throw new RuntimeException("Job not found");
         }
@@ -54,10 +74,16 @@ public class JobService {
             throw new RuntimeException("Unauthorized to edit this job");
         }
 
-        request.setJobId(jobId);
-        request.setRecruiterUid(existing.getRecruiterUid());
-        request.setCreatedAt(existing.getCreatedAt());
-        request.setUpdatedAt(Instant.now().toString());
+        existing.setTitle(request.getTitle());
+        existing.setDescription(request.getDescription());
+        existing.setLocation(request.getLocation());
+        existing.setLocationType(request.getLocationType());
+        existing.setEmploymentType(request.getEmploymentType());
+        existing.setSalaryRange(request.getSalaryRange());
+        existing.setRequiredSkills(request.getRequiredSkills());
+        existing.setExperienceLevel(request.getExperienceLevel());
+        existing.setOpenPositions(request.getOpenPositions());
+        existing.setStatus(request.getStatus());
         existing.setUpdatedAt(Instant.now().toString());
 
         jobRepository.save(existing);
@@ -72,19 +98,19 @@ public class JobService {
     }
 
     public void deleteJob(String recruiterUid, String jobId, boolean isAdmin) throws Exception {
-        JobEntity existing = jobRepository.findById(jobId);
+        JobEntity existing = jobRepository.findById(jobId).orElse(null);
         if (existing != null) {
             if (!isAdmin && !existing.getRecruiterUid().equals(recruiterUid)) {
                 throw new RuntimeException("Unauthorized to delete this job");
             }
-            jobRepository.delete(jobId);
+            jobRepository.deleteById(jobId);
         }
     }
 
     public JobEntity getJobDetails(String jobId) throws Exception {
-        JobEntity job = jobRepository.findById(jobId);
+        JobEntity job = jobRepository.findById(jobId).orElse(null);
         if (job != null) {
-            jobRepository.incrementMetric(jobId, "views", 1);
+            // jobRepository.incrementMetric(jobId, "views", 1);
         }
         return job;
     }
@@ -93,12 +119,13 @@ public class JobService {
         return jobRepository.findByRecruiterUid(recruiterUid);
     }
 
-    public List<JobEntity> searchActiveJobs(String keyword, String location, String type) throws Exception {
-        return jobRepository.searchActiveJobs(keyword, location, type);
+    public List<JobEntity> searchActiveJobs(String keyword, String location, String type, String experienceLevel, Long minSalary, String locationType, String companyId, List<String> skills) throws Exception {
+        Specification<JobEntity> spec = JobSpecification.searchJobs(keyword, location, type, experienceLevel, minSalary, locationType, companyId, skills);
+        return jobRepository.findAll(spec);
     }
 
     public SavedJobEntity saveJob(String userId, String jobId) throws Exception {
-        JobEntity job = jobRepository.findById(jobId);
+        JobEntity job = jobRepository.findById(jobId).orElse(null);
         if (job == null)
             throw new RuntimeException("Job not found");
 
@@ -110,8 +137,8 @@ public class JobService {
                 .savedAt(Instant.now().toString())
                 .jobSnapshot(new SavedJobEntity.JobSnapshot(
                         job.getTitle(),
-                        job.getCompanyMetadata() != null ? job.getCompanyMetadata().getName() : "",
-                        job.getCompanyMetadata() != null ? job.getCompanyMetadata().getLogoUrl() : "",
+                        job.getCompanyMetadata() != null ? job.getCompanyMetadata().getCompanyName() : "",
+                        job.getCompanyMetadata() != null ? job.getCompanyMetadata().getCompanyLogoUrl() : "",
                         job.getLocation(),
                         job.getLocationType(),
                         job.getEmploymentType(),
@@ -119,17 +146,17 @@ public class JobService {
                 .build();
 
         savedJobRepository.save(savedJob);
-        jobRepository.incrementMetric(jobId, "saves", 1);
+        // jobRepository.incrementMetric(jobId, "saves", 1);
         return savedJob;
     }
 
     public void unsaveJob(String userId, String jobId) throws Exception {
         String savedJobId = userId + "_" + jobId;
-        savedJobRepository.delete(savedJobId);
-        jobRepository.incrementMetric(jobId, "saves", -1);
+        savedJobRepository.deleteById(savedJobId);
+        // jobRepository.incrementMetric(jobId, "saves", -1);
     }
 
     public List<SavedJobEntity> getSavedJobs(String userId) throws Exception {
-        return savedJobRepository.findByUserId(userId);
+        return savedJobRepository.findByUserIdOrderBySavedAtDesc(userId);
     }
 }

@@ -78,9 +78,14 @@ public class JobController {
     public ResponseEntity<GlobalResponse<List<JobEntity>>> searchJobs(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String location,
-            @RequestParam(required = false) String type) {
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String experienceLevel,
+            @RequestParam(required = false) Long minSalary,
+            @RequestParam(required = false) String locationType,
+            @RequestParam(required = false) String companyId,
+            @RequestParam(required = false) List<String> skills) {
         try {
-            List<JobEntity> jobs = jobService.searchActiveJobs(keyword, location, type);
+            List<JobEntity> jobs = jobService.searchActiveJobs(keyword, location, type, experienceLevel, minSalary, locationType, companyId, skills);
             return ResponseEntity.ok(GlobalResponse.success("Jobs fetched successfully", jobs));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(GlobalResponse.error(e.getMessage()));

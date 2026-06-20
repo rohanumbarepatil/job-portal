@@ -12,6 +12,9 @@ public class RegisterRequest {
     
     @NotBlank
     private String fullName;
+
+    @NotBlank
+    private String password;
     
     @NotBlank
     private String role; // "ROLE_RECRUITER" or "ROLE_JOB_SEEKER"

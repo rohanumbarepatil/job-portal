@@ -53,11 +53,7 @@ public class GeminiMatchingService {
             return parseGeminiResponse(response);
         } catch (Exception e) {
             System.err.println("Failed to get AI score: " + e.getMessage());
-            // Fallback empty response
-            return GeminiRankingResponseDTO.builder()
-                    .totalScore(0)
-                    .aiExplanation("AI Evaluation temporarily unavailable.")
-                    .build();
+            throw new RuntimeException("Gemini API call failed: " + e.getMessage(), e);
         }
     }
 

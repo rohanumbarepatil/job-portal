@@ -1,79 +1,89 @@
 package com.jobportal.controller;
 
+import com.jobportal.dto.request.LoginRequest;
 import com.jobportal.dto.request.RegisterRequest;
 import com.jobportal.entity.UserEntity;
 import com.jobportal.response.GlobalResponse;
+import com.jobportal.security.CustomUserDetails;
+import com.jobportal.security.JwtUtil;
 import com.jobportal.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
     private final AuthService authService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
         this.authService = authService;
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<GlobalResponse<UserEntity>> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<GlobalResponse<Map<String, Object>>> register(@Valid @RequestBody RegisterRequest request) {
         try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String uid = auth.getName();
+            // Generate a random UUID for the new user
+            String uid = UUID.randomUUID().toString();
             UserEntity user = authService.registerUser(uid, request);
-            return ResponseEntity.ok(GlobalResponse.success("Registration successful", user));
+            
+            // Generate token after successful registration
+            String token = jwtUtil.generateJwtTokenForUser(user.getUid(), user.getRole());
+            
+            Map<String, Object> data = new HashMap<>();
+            data.put("token", token);
+            data.put("user", user);
+
+            return ResponseEntity.ok(GlobalResponse.success("User registered successfully", data));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(GlobalResponse.error(e.getMessage()));
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<GlobalResponse<UserEntity>> login() {
+    public ResponseEntity<GlobalResponse<Map<String, Object>>> login(@Valid @RequestBody LoginRequest request) {
         try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String uid = auth.getName();
-            UserEntity user = authService.loginUser(uid);
-            return ResponseEntity.ok(GlobalResponse.success("Login successful", user));
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtUtil.generateJwtToken(authentication);
+
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("token", jwt);
+            data.put("user", userDetails.getUser());
+
+            return ResponseEntity.ok(GlobalResponse.success("Login successful", data));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(GlobalResponse.error(e.getMessage()));
+            return ResponseEntity.status(401).body(GlobalResponse.error("Invalid credentials"));
         }
-    }
-
-    @PostMapping("/google")
-    public ResponseEntity<GlobalResponse<UserEntity>> googleSignIn(@Valid @RequestBody RegisterRequest request) {
-        try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String uid = auth.getName();
-            UserEntity user = authService.handleGoogleSignIn(uid, request);
-            return ResponseEntity.ok(GlobalResponse.success("Google Sign-In successful", user));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(GlobalResponse.error(e.getMessage()));
-        }
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<GlobalResponse<String>> logout() {
-        return ResponseEntity.ok(GlobalResponse.success("Logout successful", null));
-    }
-
-    @PostMapping("/forgot-password")
-    public ResponseEntity<GlobalResponse<String>> forgotPassword() {
-        return ResponseEntity.ok(GlobalResponse.success("Handled by Firebase Auth UI", null));
     }
 
     @GetMapping("/me")
     public ResponseEntity<GlobalResponse<UserEntity>> getCurrentUser() {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String uid = auth.getName();
-            UserEntity user = authService.loginUser(uid); 
-            return ResponseEntity.ok(GlobalResponse.success("User fetched successfully", user));
+            if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+                return ResponseEntity.status(401).body(GlobalResponse.error("Not authenticated"));
+            }
+            
+            CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+            return ResponseEntity.ok(GlobalResponse.success("Current user details fetched", userDetails.getUser()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(GlobalResponse.error(e.getMessage()));
         }

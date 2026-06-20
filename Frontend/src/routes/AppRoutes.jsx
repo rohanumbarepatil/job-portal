@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import ProtectedRoute from "./ProtectedRoute";
+import LandingPage from "../pages/public/LandingPage";
 import Onboarding from "../pages/profile/Onboarding";
 import ProfileEditor from "../pages/profile/ProfileEditor";
 import PublicProfile from "../pages/profile/PublicProfile";
@@ -24,16 +25,24 @@ import AdminLayout from '../pages/admin/AdminLayout';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import VerificationCenter from '../pages/admin/VerificationCenter';
 import AuditLogs from '../pages/admin/AuditLogs';
+import UserManagement from '../pages/admin/UserManagement';
+import JobModeration from '../pages/admin/JobModeration';
+import CompanyManagement from '../pages/admin/CompanyManagement';
+import InterviewManagement from '../pages/admin/InterviewManagement';
 import NotificationSettings from '../pages/settings/NotificationSettings';
 import NotificationBell from '../components/notifications/NotificationBell';
 
-import RecommendedJobs from '../components/ai/RecommendedJobs';
-import AIInsightsDashboard from '../components/ai/AIInsightsDashboard';
+import JobSeekerDashboard from '../pages/dashboard/JobSeekerDashboard';
+import RecruiterDashboard from '../pages/jobs/RecruiterDashboard';
 
 import { useAuth } from "../context/AuthContext";
 
 const DashboardSwitch = () => {
   const { dbUser, logout } = useAuth();
+
+  if (dbUser?.role === "ROLE_ADMIN") return <Navigate to="/admin" replace />;
+  if (dbUser?.role === "ROLE_RECRUITER") return <RecruiterDashboard />;
+  if (dbUser?.role === "ROLE_JOB_SEEKER") return <JobSeekerDashboard />;
 
   return (
     <div className="p-8">
@@ -49,20 +58,8 @@ const DashboardSwitch = () => {
           </button>
         </div>
       </div>
-      {dbUser?.role === "ROLE_ADMIN" && <div>Admin View</div>}
-      {dbUser?.role === "ROLE_RECRUITER" && (
-        <div className="space-y-6">
-          <AIInsightsDashboard />
-        </div>
-      )}
       {dbUser?.role === "ROLE_PENDING_RECRUITER" && (
         <div>Your account is pending admin approval.</div>
-      )}
-      {dbUser?.role === "ROLE_JOB_SEEKER" && (
-        <div className="space-y-6">
-          <h2 className="text-xl font-bold border-b pb-2">AI Recommended Jobs</h2>
-          <RecommendedJobs />
-        </div>
       )}
     </div>
   );
@@ -95,19 +92,20 @@ export default function AppRoutes() {
         <Route path="/dashboard/calendar" element={<RecruiterCalendar />} />
         <Route path="/dashboard/settings/notifications" element={<NotificationSettings />} />
         <Route path="/dashboard" element={<DashboardSwitch />} />
-        <Route path="/" element={<Navigate to="/dashboard" />} />
       </Route>
+      <Route path="/" element={<LandingPage />} />
 
       {/* Admin Zone */}
       <Route path="/admin" element={<AdminLayout />}>
          <Route index element={<AdminDashboard />} />
          <Route path="verification" element={<VerificationCenter />} />
          <Route path="logs" element={<AuditLogs />} />
-         {/* Stubbed Routes for remaining features */}
-         <Route path="users" element={<div className="p-10 font-bold">User Management (Coming Soon)</div>} />
-         <Route path="moderation" element={<div className="p-10 font-bold">Job Moderation (Coming Soon)</div>} />
+         <Route path="users" element={<UserManagement />} />
+         <Route path="moderation" element={<JobModeration />} />
+         <Route path="companies" element={<CompanyManagement />} />
+         <Route path="interviews" element={<InterviewManagement />} />
          <Route path="analytics" element={<AdminDashboard />} />
-         <Route path="announcements" element={<div className="p-10 font-bold">Announcements (Coming Soon)</div>} />
+         <Route path="announcements" element={<div style={{padding:40,fontWeight:'bold',color:'#64748b'}}>Announcements (Coming Soon)</div>} />
       </Route>
 
     </Routes>

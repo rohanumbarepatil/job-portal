@@ -64,7 +64,7 @@ public class NotificationController {
     public ResponseEntity<GlobalResponse<NotificationPreferenceEntity>> getPreferences() {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            NotificationPreferenceEntity pref = preferenceRepository.findByUserUid(auth.getName());
+            NotificationPreferenceEntity pref = preferenceRepository.findByUserUid(auth.getName()).orElse(null);
             if (pref == null) {
                 // Default preferences
                 pref = NotificationPreferenceEntity.builder()
@@ -86,7 +86,7 @@ public class NotificationController {
     public ResponseEntity<GlobalResponse<Void>> updatePreferences(@RequestBody Map<String, Boolean> payload) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            NotificationPreferenceEntity pref = preferenceRepository.findByUserUid(auth.getName());
+            NotificationPreferenceEntity pref = preferenceRepository.findByUserUid(auth.getName()).orElse(null);
             if (pref == null) {
                 pref = new NotificationPreferenceEntity();
                 pref.setUserUid(auth.getName());
@@ -115,7 +115,7 @@ public class NotificationController {
             if (token == null || token.isEmpty())
                 throw new RuntimeException("Token missing");
 
-            NotificationPreferenceEntity pref = preferenceRepository.findByUserUid(auth.getName());
+            NotificationPreferenceEntity pref = preferenceRepository.findByUserUid(auth.getName()).orElse(null);
             if (pref == null) {
                 pref = NotificationPreferenceEntity.builder()
                         .userUid(auth.getName())

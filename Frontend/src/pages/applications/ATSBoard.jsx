@@ -8,12 +8,13 @@ import RecommendedCandidates from '../../components/ai/RecommendedCandidates';
 
 const COLUMNS = [
   { id: 'APPLIED', title: 'Applied' },
-  { id: 'REVIEWING', title: 'Reviewing' },
+  { id: 'UNDER_REVIEW', title: 'Under Review' },
   { id: 'SHORTLISTED', title: 'Shortlisted' },
-  { id: 'INTERVIEW_SCHEDULED', title: 'Interview' },
-  { id: 'OFFERED', title: 'Offered' },
-  { id: 'HIRED', title: 'Hired' },
-  { id: 'REJECTED', title: 'Rejected' }
+  { id: 'INTERVIEW_SCHEDULED', title: 'Interview Scheduled' },
+  { id: 'INTERVIEW_COMPLETED', title: 'Interview Completed' },
+  { id: 'SELECTED', title: 'Selected' },
+  { id: 'REJECTED', title: 'Rejected' },
+  { id: 'WITHDRAWN', title: 'Withdrawn' }
 ];
 
 export default function ATSBoard() {
@@ -22,6 +23,7 @@ export default function ATSBoard() {
   const [loading, setLoading] = useState(true);
   const [selectedApp, setSelectedApp] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchApplications();
@@ -95,9 +97,15 @@ export default function ATSBoard() {
   if (loading) return <div className="p-10 font-bold text-center">Loading ATS Board...</div>;
 
   // Group applications by status
+  const filteredApps = applications.filter(app => 
+    !searchQuery || 
+    app.candidateSnapshot?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    app.candidateSnapshot?.skills?.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
   const columnsData = COLUMNS.map(col => ({
     ...col,
-    items: applications.filter(app => app.status === col.id)
+    items: filteredApps.filter(app => app.status === col.id)
   }));
 
   return (
@@ -105,7 +113,14 @@ export default function ATSBoard() {
       <div className="mb-6 flex justify-between items-start">
         <div>
           <h1 className="text-2xl font-bold">ATS Pipeline</h1>
-          <p className="text-gray-600">Drag and drop candidates to update their stage.</p>
+          <p className="text-gray-600 mb-4">Drag and drop candidates to update their stage.</p>
+          <input 
+            type="text" 
+            placeholder="Search candidates by name or skills..." 
+            className="w-full max-w-md p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
         <div className="w-1/3 bg-white p-4 rounded-xl shadow-sm border border-blue-100 max-h-64 overflow-y-auto">
           <RecommendedCandidates jobId={jobId} />

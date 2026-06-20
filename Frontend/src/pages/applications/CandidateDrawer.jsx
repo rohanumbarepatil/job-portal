@@ -66,13 +66,13 @@ export default function CandidateDrawer({ isOpen, onClose, application, onStatus
                 onChange={(e) => onStatusChange(application.applicationId, e.target.value)}
               >
                 <option value="APPLIED">Applied</option>
-                <option value="REVIEWING">Reviewing</option>
+                <option value="UNDER_REVIEW">Under Review</option>
                 <option value="SHORTLISTED">Shortlisted</option>
                 <option value="INTERVIEW_SCHEDULED">Interview Scheduled</option>
-                <option value="INTERVIEWED">Interviewed</option>
-                <option value="OFFERED">Offered</option>
-                <option value="HIRED">Hired</option>
+                <option value="INTERVIEW_COMPLETED">Interview Completed</option>
+                <option value="SELECTED">Selected</option>
                 <option value="REJECTED">Rejected</option>
+                <option value="WITHDRAWN">Withdrawn</option>
               </select>
             </div>
 

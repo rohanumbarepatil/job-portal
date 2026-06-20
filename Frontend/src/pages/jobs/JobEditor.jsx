@@ -41,8 +41,8 @@ export default function JobEditor() {
         employmentType: job.employmentType || 'FULL_TIME',
         experienceLevel: job.experienceLevel || 'MID',
         openPositions: job.openPositions || 1,
-        salaryMin: job.salaryRange?.min || '',
-        salaryMax: job.salaryRange?.max || '',
+        salaryMin: job.salaryRange?.minSalary || '',
+        salaryMax: job.salaryRange?.maxSalary || '',
         status: job.status || 'ACTIVE'
       });
     } catch (e) {
@@ -69,10 +69,10 @@ export default function JobEditor() {
       experienceLevel: formData.experienceLevel,
       openPositions: parseInt(formData.openPositions, 10),
       salaryRange: {
-        min: parseInt(formData.salaryMin, 10) || 0,
-        max: parseInt(formData.salaryMax, 10) || 0,
+        minSalary: parseInt(formData.salaryMin, 10) || 0,
+        maxSalary: parseInt(formData.salaryMax, 10) || 0,
         currency: 'INR',
-        isDisclosed: true
+        disclosed: true
       },
       status: formData.status
     };
@@ -87,7 +87,8 @@ export default function JobEditor() {
       }
       navigate('/dashboard/jobs');
     } catch (e) {
-      toast.error("Failed to save job");
+      console.error("Job post error:", e);
+      toast.error(e.response?.data?.message || "Failed to save job");
     }
   };
 

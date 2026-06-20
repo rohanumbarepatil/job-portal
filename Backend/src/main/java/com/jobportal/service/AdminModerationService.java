@@ -29,16 +29,17 @@ public class AdminModerationService {
     }
 
     public void suspendUser(String adminUid, String targetUid, String reason) throws Exception {
-        // Here we would interact with Firebase Auth to actually disable the user
-        // userRecord.setDisabled(true); 
-        // FirebaseAuth.getInstance().updateUser(request);
+        // Here we would interact with MySQL to actually disable the user
+        // user.setActive(false);
+        // userRepository.save(user);
         
         // Log action
         logAdminAction(adminUid, "USER_SUSPENDED", targetUid, reason);
     }
 
     public void reactivateUser(String adminUid, String targetUid, String reason) throws Exception {
-        // FirebaseAuth.getInstance().updateUser(new UserRecord.UpdateRequest(targetUid).setDisabled(false));
+        // user.setActive(true);
+        // userRepository.save(user);
         logAdminAction(adminUid, "USER_REACTIVATED", targetUid, reason);
     }
 

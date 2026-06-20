@@ -15,7 +15,11 @@ export default function ProfileEditor() {
       const res = await axiosInstance.get('/seekers/me');
       setProfile(res.data.data);
     } catch (e) {
-      toast.error("Failed to load profile");
+      if (e.response && (e.response.status === 404 || e.response.status === 400)) {
+         window.location.href = '/onboarding';
+      } else {
+         toast.error("Failed to load profile");
+      }
     }
   };
 
@@ -26,7 +30,8 @@ export default function ProfileEditor() {
       setProfile(res.data.data);
       toast.success("Profile updated");
     } catch (e) {
-      toast.error("Update failed");
+      console.error("Profile update error:", e);
+      toast.error(e.response?.data?.message || "Update failed");
     }
   };
 
@@ -41,7 +46,7 @@ export default function ProfileEditor() {
           <h3 className="text-xl font-bold mb-4">Headline & Availability</h3>
           <input type="text" value={profile.headline || ''} onChange={e => setProfile({...profile, headline: e.target.value})} className="w-full border p-2 rounded mb-4" placeholder="e.g. Senior Frontend Engineer" />
           <label className="flex items-center space-x-2">
-            <input type="checkbox" checked={profile.openToWork || false} onChange={e => handleSave({openToWork: e.target.checked})} className="form-checkbox h-5 w-5 text-blue-600"/>
+            <input type="checkbox" checked={profile.openToWork || false} onChange={e => setProfile({...profile, openToWork: e.target.checked})} className="form-checkbox h-5 w-5 text-blue-600"/>
             <span className="font-medium text-gray-700">Open to Work</span>
           </label>
         </div>
@@ -49,7 +54,8 @@ export default function ProfileEditor() {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <h3 className="text-xl font-bold mb-4">Resume & AI Parsing</h3>
           <ResumeUploader onParseSuccess={(data) => {
-            handleSave({
+            setProfile({
+              ...profile,
               skills: [...new Set([...(profile.skills||[]), ...data.skills])],
               experience: data.experience || profile.experience
             });
@@ -65,7 +71,7 @@ export default function ProfileEditor() {
           </div>
           <button onClick={() => {
             const skill = prompt("Enter a skill:");
-            if (skill) handleSave({skills: [...(profile.skills||[]), skill]});
+            if (skill) setProfile({...profile, skills: [...(profile.skills||[]), skill]});
           }} className="text-blue-600 font-medium hover:underline">+ Add Skill</button>
         </div>
 

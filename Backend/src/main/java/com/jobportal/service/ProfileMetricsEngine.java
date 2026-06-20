@@ -1,6 +1,10 @@
 package com.jobportal.service;
 
 import com.jobportal.entity.JobSeekerProfile;
+import com.jobportal.entity.ProfileExperience;
+import com.jobportal.entity.ProfileEducation;
+import com.jobportal.entity.ProfileProject;
+import com.jobportal.entity.ProfileCertification;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -41,7 +45,7 @@ public class ProfileMetricsEngine {
             atsScore += 20;
         }
         if (profile.getExperience() != null) {
-            for (JobSeekerProfile.Experience exp : profile.getExperience()) {
+            for (ProfileExperience exp : profile.getExperience()) {
                 if (exp.getDescription() != null && exp.getDescription().length() > 50) {
                     atsScore += 10;
                 }

@@ -32,7 +32,7 @@ public class AdminVerificationService {
     }
 
     public void resolveRequest(String adminUid, String requestId, String status, String reason) throws Exception {
-        VerificationRequestEntity request = verificationRequestRepository.findById(requestId);
+        VerificationRequestEntity request = verificationRequestRepository.findById(requestId).orElse(null);
         if (request == null) throw new RuntimeException("Request not found");
 
         request.setStatus(status);
@@ -43,9 +43,6 @@ public class AdminVerificationService {
         verificationRequestRepository.save(request);
 
         // Also update the underlying entity (e.g., Company status = VERIFIED)
-        // Set Firebase custom claim if it's a recruiter approval
-        // FirebaseAuth.getInstance().setCustomUserClaims(...)
-
         // Log the action
         String action = status.equals("APPROVED") ? request.getEntityType() + "_VERIFIED" : request.getEntityType() + "_REJECTED";
         adminModerationService.logAdminAction(adminUid, action, request.getEntityId(), reason);

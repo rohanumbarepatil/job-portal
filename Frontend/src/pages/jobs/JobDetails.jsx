@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import { formatSalary } from '../../utils/formatters';
 
 export default function JobDetails() {
   const { jobId } = useParams();
@@ -73,7 +74,7 @@ export default function JobDetails() {
                  <div className="flex space-x-4 mt-2 text-gray-600 text-sm">
                    <span>📍 {job.location} ({job.locationType})</span>
                    <span>💼 {job.employmentType}</span>
-                   <span>💰 {job.salaryRange?.isDisclosed ? `₹${job.salaryRange.min.toLocaleString()} - ₹${job.salaryRange.max.toLocaleString()}` : 'Not Disclosed'}</span>
+                   <span>💰 {formatSalary(job.salaryRange)}</span>
                  </div>
                </div>
             </div>

@@ -44,7 +44,7 @@ public class AIController {
 
             // Security: Candidate can only see their own. Recruiter must own the job.
             if (!currentUser.equals(candidateUid)) {
-                JobEntity job = jobRepository.findById(jobId);
+                JobEntity job = jobRepository.findById(jobId).orElse(null);
                 if (job == null || !job.getRecruiterUid().equals(currentUser)) {
                     throw new RuntimeException("Unauthorized to view this ranking.");
                 }
@@ -78,7 +78,7 @@ public class AIController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
             // Security: Recruiter must own the job.
-            JobEntity job = jobRepository.findById(jobId);
+            JobEntity job = jobRepository.findById(jobId).orElse(null);
             if (job == null || !job.getRecruiterUid().equals(auth.getName())) {
                 throw new RuntimeException("Unauthorized to view recommendations for this job.");
             }

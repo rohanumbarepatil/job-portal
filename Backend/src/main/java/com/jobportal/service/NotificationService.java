@@ -1,6 +1,5 @@
 package com.jobportal.service;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.jobportal.entity.NotificationEntity;
 import com.jobportal.entity.NotificationPreferenceEntity;
 import com.jobportal.repository.NotificationPreferenceRepository;
@@ -16,30 +15,27 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationPreferenceRepository preferenceRepository;
     private final EmailService emailService;
-    private final FCMService fcmService;
 
     // Only these types will trigger an actual email dispatch
     private static final java.util.List<String> EMAIL_ENABLED_TYPES = java.util.Arrays.asList(
-            "WELCOME", "RECRUITER_APPROVED", "COMPANY_VERIFIED",
+            "WELCOME", "REGISTRATION_SUCCESS", "RECRUITER_APPROVED", "COMPANY_VERIFIED",
+            "APPLICATION_SUBMITTED", "APPLICATION_SHORTLISTED",
             "INTERVIEW_SCHEDULED", "INTERVIEW_RESCHEDULED", "INTERVIEW_CANCELLED",
-            "OFFER_RECEIVED", "APPLICATION_REJECTED", "SYSTEM_ANNOUNCEMENT");
+            "OFFER_RECEIVED", "CANDIDATE_SELECTED", "APPLICATION_REJECTED", "SYSTEM_ANNOUNCEMENT");
 
     public NotificationService(NotificationRepository notificationRepository,
             NotificationPreferenceRepository preferenceRepository,
-            EmailService emailService,
-            FCMService fcmService) {
+            EmailService emailService) {
         this.notificationRepository = notificationRepository;
         this.preferenceRepository = preferenceRepository;
         this.emailService = emailService;
-        this.fcmService = fcmService;
     }
 
     public void sendNotification(String userUid, String type, String title, String message, String actionUrl,
             String emailAddress) {
         try {
-            NotificationPreferenceEntity prefs = preferenceRepository.findByUserUid(userUid);
+            NotificationPreferenceEntity prefs = preferenceRepository.findByUserUid(userUid).orElse(null);
             boolean inAppEnabled = prefs == null || prefs.isInAppEnabled();
-            boolean pushEnabled = prefs == null || prefs.isPushEnabled();
             boolean emailEnabled = prefs == null || prefs.isEmailEnabled();
 
             // 1. In-App Notification
@@ -57,20 +53,11 @@ public class NotificationService {
                 notificationRepository.save(notification);
             }
 
-            // 2. FCM Push Notification
-            if (pushEnabled && prefs != null && prefs.getFcmTokens() != null && !prefs.getFcmTokens().isEmpty()) {
-                fcmService.sendPushNotification(prefs.getFcmTokens(), title, message, actionUrl);
-            }
+            // 2. FCM Push Notification (Removed)
 
             // 3. Email Notification
             if (emailEnabled && EMAIL_ENABLED_TYPES.contains(type)) {
                 String targetEmail = emailAddress;
-                if (targetEmail == null || targetEmail.isEmpty()) {
-                    try {
-                        targetEmail = FirebaseAuth.getInstance().getUser(userUid).getEmail();
-                    } catch (Exception ignore) {
-                    }
-                }
 
                 if (targetEmail != null && !targetEmail.isEmpty()) {
                     String htmlContent = buildEmailContent(title, message, actionUrl);
@@ -92,11 +79,11 @@ public class NotificationService {
     public java.util.List<NotificationEntity> getUserNotifications(String userUid)
             throws Exception {
 
-        return notificationRepository.findByUserUid(userUid);
+        return notificationRepository.findTop50ByUserUidOrderByCreatedAtDesc(userUid);
     }
 
     public void markAsRead(String userUid, String notificationId) throws Exception {
-        NotificationEntity notif = notificationRepository.findById(notificationId);
+        NotificationEntity notif = notificationRepository.findById(notificationId).orElse(null);
         if (notif != null && notif.getUserUid().equals(userUid)) {
             notif.setRead(true);
             notificationRepository.save(notif);
@@ -104,7 +91,7 @@ public class NotificationService {
     }
 
     public void markAllAsRead(String userUid) throws Exception {
-        var list = notificationRepository.findByUserUid(userUid);
+        var list = notificationRepository.findTop50ByUserUidOrderByCreatedAtDesc(userUid);
         for (var notif : list) {
             if (!notif.isRead()) {
                 notif.setRead(true);

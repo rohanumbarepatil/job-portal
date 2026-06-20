@@ -6,10 +6,12 @@ export default function InterviewScheduler({ applicationId, onClose, onSuccess }
   const [formData, setFormData] = useState({
     roundName: 'Technical Interview',
     roundType: 'TECHNICAL',
+    interviewMode: 'ONLINE',
+    interviewerName: '',
     scheduledAt: '',
     durationMinutes: 60,
     meetingLink: '',
-    location: 'Virtual',
+    location: '',
     notes: ''
   });
 
@@ -64,6 +66,21 @@ export default function InterviewScheduler({ applicationId, onClose, onSuccess }
 
           <div className="grid grid-cols-2 gap-4">
             <div>
+              <label className="block text-sm font-bold mb-1">Interview Mode</label>
+              <select className="w-full border p-2 rounded" value={formData.interviewMode} onChange={e => setFormData({...formData, interviewMode: e.target.value})}>
+                <option value="ONLINE">Online</option>
+                <option value="OFFLINE">Offline (On-site)</option>
+                <option value="PHONE">Phone</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-bold mb-1">Interviewer Name</label>
+              <input required type="text" placeholder="e.g. John Doe" className="w-full border p-2 rounded" value={formData.interviewerName} onChange={e => setFormData({...formData, interviewerName: e.target.value})} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
               <label className="block text-sm font-bold mb-1">Date & Time</label>
               <input required type="datetime-local" className="w-full border p-2 rounded" value={formData.scheduledAt} onChange={e => setFormData({...formData, scheduledAt: e.target.value})} />
             </div>
@@ -73,10 +90,22 @@ export default function InterviewScheduler({ applicationId, onClose, onSuccess }
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-bold mb-1">Meeting Link</label>
-            <input required type="url" placeholder="https://meet.google.com/..." className="w-full border p-2 rounded" value={formData.meetingLink} onChange={e => setFormData({...formData, meetingLink: e.target.value})} />
-          </div>
+          {formData.interviewMode === 'ONLINE' ? (
+            <div>
+              <label className="block text-sm font-bold mb-1">Meeting Link</label>
+              <input required type="url" placeholder="https://meet.google.com/..." className="w-full border p-2 rounded" value={formData.meetingLink} onChange={e => setFormData({...formData, meetingLink: e.target.value})} />
+            </div>
+          ) : formData.interviewMode === 'OFFLINE' ? (
+            <div>
+              <label className="block text-sm font-bold mb-1">Office Location</label>
+              <input required type="text" placeholder="123 Tech Park, City" className="w-full border p-2 rounded" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
+            </div>
+          ) : (
+            <div>
+              <label className="block text-sm font-bold mb-1">Phone Number</label>
+              <input required type="text" placeholder="+1 234 567 8900" className="w-full border p-2 rounded" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-bold mb-1">Notes for Candidate</label>
