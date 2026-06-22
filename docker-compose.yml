@@ -30,7 +30,6 @@ services:
       # Spring Profile
       SPRING_PROFILES_ACTIVE: prod
       # Database Properties
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_db:3306/jobportal?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: db_user
       SPRING_DATASOURCE_PASSWORD: db_password
       # Security Config
