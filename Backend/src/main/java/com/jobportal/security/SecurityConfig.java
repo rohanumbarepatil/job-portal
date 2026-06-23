@@ -32,8 +32,8 @@ public class SecurityConfig {
     @org.springframework.beans.factory.annotation.Value("${cors.allowed-origins:https://job-portal-tan-three.vercel.app}")
     private String allowedOrigins;
 
-    public SecurityConfig(JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, 
-                          CustomUserDetailsService customUserDetailsService) {
+    public SecurityConfig(JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
+            CustomUserDetailsService customUserDetailsService) {
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.customUserDetailsService = customUserDetailsService;
     }
@@ -77,22 +77,21 @@ public class SecurityConfig {
     }
 
     @Bean
-public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration configuration = new CorsConfiguration();
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
 
-    configuration.setAllowedOrigins(
-            Arrays.asList(allowedOrigins.split(","))
-    );
+        configuration.setAllowedOrigins(
+                Arrays.asList(allowedOrigins.split(",")));
 
-    configuration.setAllowedMethods(List.of("*"));
-    configuration.setAllowedHeaders(List.of("*"));
-    configuration.setExposedHeaders(List.of("Authorization"));
-    configuration.setAllowCredentials(true);
+        configuration.setAllowedMethods(List.of("*"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setAllowCredentials(true);
 
-    UrlBasedCorsConfigurationSource source =
-            new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
-    source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/**", configuration);
 
-    return source;
+        return source;
+    }
 }
